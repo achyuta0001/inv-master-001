@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: inv-master-001-db
+
+    environment:
+      POSTGRES_DB: inv_master_001
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - inv-master-001-data:/var/lib/postgresql/data
+
+volumes:
+  inv-master-001-data:
