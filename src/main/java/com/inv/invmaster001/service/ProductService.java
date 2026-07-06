@@ -4,6 +4,8 @@ package com.inv.invmaster001.service;
 import com.inv.invmaster001.dto.request.product.CreateProductRequest;
 import com.inv.invmaster001.dto.request.product.MaterialRequest;
 import com.inv.invmaster001.dto.request.product.UpdateProductRequest;
+import com.inv.invmaster001.dto.response.product.MaterialResponse;
+import com.inv.invmaster001.dto.response.product.ProductFullResponse;
 import com.inv.invmaster001.dto.response.product.ProductResponse;
 import com.inv.invmaster001.entity.Company;
 import com.inv.invmaster001.entity.Material;
@@ -34,6 +36,15 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final CompanyRepository companyRepository;
+
+    public List<ProductFullResponse> getAllProducts(Long companyId) {
+
+        List<Product> products = productRepository.findByCompanyId(companyId);
+
+        return products.stream()
+                .map(this::mapToFullResponse)
+                .toList();
+    }
 
     // =========================================================
     // CREATE PRODUCT
@@ -250,5 +261,36 @@ public class ProductService {
                 .divide(manufacturingCost, 4, RoundingMode.HALF_UP)
                 .multiply(BigDecimal.valueOf(100))
                 .setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private ProductFullResponse mapToFullResponse(Product product) {
+
+        ProductPriceHistory latest = product.getPriceHistory().stream()
+                .filter(h -> h.getEffectiveTo() == null)
+                .findFirst()
+                .orElse(null);
+
+        List<MaterialResponse> materials = product.getMaterials().stream()
+                .map(m -> MaterialResponse.builder()
+                        .materialId(m.getId())
+                        .materialName(m.getMaterialName())
+                        .unit(m.getUnit())
+                        .currentPrice(m.getCurrentPrice())
+                        .build()
+                )
+                .toList();
+
+        return ProductFullResponse.builder()
+                .productId(product.getId())
+                .productName(product.getProductName())
+                .description(product.getDescription())
+                .active(product.getActive())
+
+                .manufacturingCost(latest != null ? latest.getManufacturingCost() : null)
+                .sellingPrice(latest != null ? latest.getSellingPrice() : null)
+                .profitMargin(latest != null ? latest.getProfitMargin() : null)
+
+                .materials(materials)
+                .build();
     }
 }
