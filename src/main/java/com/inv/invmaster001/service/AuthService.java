@@ -1,8 +1,8 @@
 package com.inv.invmaster001.service;
 
-import com.inv.invmaster001.dto.RegisterCompanyRequest;
-import com.inv.invmaster001.dto.RegisterUserRequest;
-import com.inv.invmaster001.dto.RegisterCommonResponse;
+import com.inv.invmaster001.dto.request.RegisterCompanyRequest;
+import com.inv.invmaster001.dto.request.RegisterUserRequest;
+import com.inv.invmaster001.dto.response.RegisterCommonResponse;
 import com.inv.invmaster001.entity.Company;
 import com.inv.invmaster001.entity.User;
 import com.inv.invmaster001.repository.CompanyRepository;

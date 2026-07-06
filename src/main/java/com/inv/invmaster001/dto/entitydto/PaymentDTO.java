@@ -1,18 +1,33 @@
 package com.inv.invmaster001.dto.entitydto;
 
-import lombok.Data;
-
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Data
+/**
+ * Data Transfer Object for Payment entity.
+ */
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
 public class PaymentDTO {
+
     private Long id;
     private Long invoiceId;
-    private java.sql.Date paymentDate;
+    private LocalDate paymentDate;
     private BigDecimal amount;
     private String paymentMethod;
     private String transactionReference;
     private String remarks;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private LocalDateTime deletedAt;
 }

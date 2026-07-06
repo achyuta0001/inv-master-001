@@ -1,18 +1,33 @@
 package com.inv.invmaster001.dto.entitydto;
 
-import lombok.Data;
 import java.math.BigDecimal;
-
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Data
+/**
+ * Data Transfer Object for ProductPriceHistory entity.
+ */
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
 public class ProductPriceHistoryDTO {
+
     private Long id;
     private Long productId;
     private BigDecimal manufacturingCost;
     private BigDecimal sellingPrice;
     private BigDecimal profitMargin;
-    private java.sql.Date effectiveFrom;
-    private java.sql.Date effectiveTo;
+    private LocalDate effectiveFrom;
+    private LocalDate effectiveTo;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private LocalDateTime deletedAt;
 }

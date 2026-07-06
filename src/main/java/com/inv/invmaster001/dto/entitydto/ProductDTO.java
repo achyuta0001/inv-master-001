@@ -1,11 +1,23 @@
 package com.inv.invmaster001.dto.entitydto;
 
-import lombok.Data;
-
 import java.time.LocalDateTime;
 
-@Data
+/**
+ * Data Transfer Object for Product entity.
+ */
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
 public class ProductDTO {
+
     private Long id;
     private Long companyId;
     private String productName;
@@ -14,8 +26,4 @@ public class ProductDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
-
-    // For nested relationships (optional, can be populated as needed)
-    // private List<ProductMaterialDTO> productMaterials;
-    // private List<ProductPriceHistoryDTO> priceHistory;
 }

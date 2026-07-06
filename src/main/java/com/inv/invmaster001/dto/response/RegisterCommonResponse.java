@@ -1,4 +1,4 @@
-package com.inv.invmaster001.dto;
+package com.inv.invmaster001.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

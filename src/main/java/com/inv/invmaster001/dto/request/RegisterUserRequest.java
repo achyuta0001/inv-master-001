@@ -1,4 +1,4 @@
-package com.inv.invmaster001.dto;
+package com.inv.invmaster001.dto.request;
 
 import com.inv.invmaster001.entity.UserRole;
 import lombok.Data;

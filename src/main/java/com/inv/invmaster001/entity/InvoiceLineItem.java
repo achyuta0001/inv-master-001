@@ -1,40 +1,52 @@
 package com.inv.invmaster001.entity;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 import lombok.*;
 
-import java.math.BigDecimal;
-
+/**
+ * InvoiceLineItem entity mapped from the invoice_line_items table.
+ */
 @Entity
+@Table(name = "invoice_line_items")
+@Builder
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@Table(name = "invoice_line_items")
 public class InvoiceLineItem {
 
+    @EqualsAndHashCode.Include
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false, updatable = false)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "invoice_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "invoice_id", nullable = false)
     private Invoice invoice;
 
-    @ManyToOne
-    @JoinColumn(name = "product_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    @Column(name = "product_name")
+    @Column(name = "product_name", length = 150, nullable = false)
     private String productName;
 
-    @Column(name = "quantity", precision = 10, scale = 2)
-    private BigDecimal quantity;
+    @Column(name = "unit", length = 20)
+    private String unit;
 
-    @Column(name = "unit_price", precision = 12, scale = 2)
+    @Column(name = "unit_price", precision = 12, scale = 2, nullable = false)
     private BigDecimal unitPrice;
 
-    @Column(name = "total", precision = 12, scale = 2)
-    private BigDecimal total;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 }

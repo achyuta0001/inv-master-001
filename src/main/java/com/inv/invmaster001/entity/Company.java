@@ -1,55 +1,72 @@
 package com.inv.invmaster001.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.*;
+
+/**
+ * Company entity mapped from the companies table.
+ */
 @Entity
+@Table(name = "companies")
+@Builder
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@Table(name = "companies")
 public class Company {
 
+    @EqualsAndHashCode.Include
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false, updatable = false)
     private Long id;
-
-    @Column(name = "company_name")
-    private String companyName;
-    @Column(name = "gst_number")
-    private String gstNumber;
-    @Column(name = "phone")
-    private String phone;
-    @Column(name = "email")
-    private String email;
-    @Column(name = "address")
-    private String address;
-
-    @Column(name = "bank_name")
-    private String bankName;
-    @Column(name = "account_number")
-    private String accountNumber;
-    @Column(name = "ifsc")
-    private String ifsc;
-    @Column(name = "upi_id")
-    private String upiId;
-    @Column(name = "logo_url")
-    private String logoUrl;
-
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<User> users = new ArrayList<>();
+
+    @Column(name = "company_name", length = 150, nullable = false)
+    private String companyName;
+
+    @Column(name = "gst_number", length = 30)
+    private String gstNumber;
+
+    @Column(name = "phone", length = 20)
+    private String phone;
+
+    @Column(name = "email", length = 255)
+    private String email;
+
+    @Column(name = "address", columnDefinition = "TEXT")
+    private String address;
+
+    @Column(name = "bank_name", length = 100)
+    private String bankName;
+
+    @Column(name = "account_number", length = 50)
+    private String accountNumber;
+
+    @Column(name = "ifsc", length = 20)
+    private String ifsc;
+
+    @Column(name = "upi_id", length = 50)
+    private String upiId;
+
+    @Column(name = "logo_url", columnDefinition = "TEXT")
+    private String logoUrl;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
 
     //  helper methods to keep both sides in sync
     public void addUser(User user) {

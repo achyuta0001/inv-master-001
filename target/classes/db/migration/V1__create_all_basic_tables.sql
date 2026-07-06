@@ -1,4 +1,3 @@
-
 -- ============================================
 -- COMPANIES
 -- ============================================
@@ -16,7 +15,8 @@ CREATE TABLE companies (
                            upi_id VARCHAR(50),
                            logo_url TEXT,
                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                           deleted_at TIMESTAMP
 );
 
 -- ============================================
@@ -29,28 +29,11 @@ CREATE TABLE users (
                        name VARCHAR(100) NOT NULL,
                        email VARCHAR(255) UNIQUE NOT NULL,
                        password VARCHAR(255) NOT NULL,
-                       role  VARCHAR(20),
+                       role VARCHAR(20),
+
                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                        deleted_at TIMESTAMP
-);
-
--- ============================================
--- CUSTOMERS
--- ============================================
-
-CREATE TABLE customers (
-                           id BIGSERIAL PRIMARY KEY,
-                           company_id BIGINT NOT NULL REFERENCES companies(id),
-                           customer_name VARCHAR(150) NOT NULL,
-                           phone VARCHAR(20),
-                           email VARCHAR(255),
-                           gst_number VARCHAR(30),
-                           billing_address TEXT,
-                           shipping_address TEXT,
-                           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                           deleted_at TIMESTAMP
 );
 
 -- ============================================
@@ -60,13 +43,33 @@ CREATE TABLE customers (
 CREATE TABLE settings (
                           id BIGSERIAL PRIMARY KEY,
                           company_id BIGINT UNIQUE NOT NULL REFERENCES companies(id),
+
                           gst_percentage DECIMAL(5,2),
                           default_profit_margin DECIMAL(5,2),
                           currency VARCHAR(10),
                           invoice_prefix VARCHAR(20),
                           financial_year VARCHAR(20),
+
                           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                          deleted_at TIMESTAMP
+);
+
+-- ============================================
+-- PRODUCTS
+-- ============================================
+
+CREATE TABLE products (
+                          id BIGSERIAL PRIMARY KEY,
+                          company_id BIGINT NOT NULL REFERENCES companies(id),
+
+                          product_name VARCHAR(150) NOT NULL,
+                          description TEXT,
+                          active BOOLEAN DEFAULT TRUE,
+
+                          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                          deleted_at TIMESTAMP
 );
 
 -- ============================================
@@ -75,11 +78,14 @@ CREATE TABLE settings (
 
 CREATE TABLE materials (
                            id BIGSERIAL PRIMARY KEY,
-                           company_id BIGINT NOT NULL REFERENCES companies(id),
+
+                           product_id BIGINT NOT NULL REFERENCES products(id),
+
                            material_name VARCHAR(100) NOT NULL,
                            unit VARCHAR(20),
                            current_price DECIMAL(12,2),
                            active BOOLEAN DEFAULT TRUE,
+
                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                            deleted_at TIMESTAMP
@@ -91,37 +97,16 @@ CREATE TABLE materials (
 
 CREATE TABLE material_price_history (
                                         id BIGSERIAL PRIMARY KEY,
+
                                         material_id BIGINT NOT NULL REFERENCES materials(id),
+
                                         price DECIMAL(12,2) NOT NULL,
                                         effective_from DATE NOT NULL,
                                         effective_to DATE,
-                                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
 
--- ============================================
--- PRODUCTS
--- ============================================
-
-CREATE TABLE products (
-                          id BIGSERIAL PRIMARY KEY,
-                          company_id BIGINT NOT NULL REFERENCES companies(id),
-                          product_name VARCHAR(150) NOT NULL,
-                          description TEXT,
-                          active BOOLEAN DEFAULT TRUE,
-                          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                          deleted_at TIMESTAMP
-);
-
--- ============================================
--- PRODUCT MATERIALS
--- ============================================
-
-CREATE TABLE product_materials (
-                                   id BIGSERIAL PRIMARY KEY,
-                                   product_id BIGINT NOT NULL REFERENCES products(id),
-                                   material_id BIGINT NOT NULL REFERENCES materials(id),
-                                   quantity DECIMAL(10,3) NOT NULL
+                                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                        deleted_at TIMESTAMP
 );
 
 -- ============================================
@@ -130,13 +115,18 @@ CREATE TABLE product_materials (
 
 CREATE TABLE product_price_history (
                                        id BIGSERIAL PRIMARY KEY,
+
                                        product_id BIGINT NOT NULL REFERENCES products(id),
+
                                        manufacturing_cost DECIMAL(12,2),
                                        selling_price DECIMAL(12,2),
                                        profit_margin DECIMAL(5,2),
                                        effective_from DATE,
                                        effective_to DATE,
-                                       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+                                       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                       deleted_at TIMESTAMP
 );
 
 -- ============================================
@@ -145,10 +135,17 @@ CREATE TABLE product_price_history (
 
 CREATE TABLE invoice_sequences (
                                    id BIGSERIAL PRIMARY KEY,
+
                                    company_id BIGINT NOT NULL REFERENCES companies(id),
+
                                    year INT NOT NULL,
                                    prefix VARCHAR(20),
                                    next_number INT DEFAULT 1,
+
+                                   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                   deleted_at TIMESTAMP,
+
                                    UNIQUE(company_id, year)
 );
 
@@ -158,18 +155,25 @@ CREATE TABLE invoice_sequences (
 
 CREATE TABLE invoices (
                           id BIGSERIAL PRIMARY KEY,
+
                           invoice_number VARCHAR(50) UNIQUE NOT NULL,
+
                           company_id BIGINT NOT NULL REFERENCES companies(id),
                           created_by BIGINT NOT NULL REFERENCES users(id),
+
                           invoice_date DATE NOT NULL,
+
                           subtotal DECIMAL(12,2) DEFAULT 0,
                           gst DECIMAL(12,2) DEFAULT 0,
                           discount DECIMAL(12,2) DEFAULT 0,
                           grand_total DECIMAL(12,2) DEFAULT 0,
+
                           status VARCHAR(30) DEFAULT 'GENERATED',
                           remarks TEXT,
+
                           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                          deleted_at TIMESTAMP
 );
 
 -- ============================================
@@ -178,12 +182,23 @@ CREATE TABLE invoices (
 
 CREATE TABLE invoice_line_items (
                                     id BIGSERIAL PRIMARY KEY,
-                                    invoice_id BIGINT NOT NULL REFERENCES invoices(id) ON DELETE CASCADE,
-                                    product_id BIGINT NOT NULL REFERENCES products(id),
-                                    product_name VARCHAR(150),
-                                    quantity DECIMAL(10,2) NOT NULL,
+
+                                    invoice_id BIGINT NOT NULL
+                                        REFERENCES invoices(id)
+                                            ON DELETE CASCADE,
+
+                                    product_id BIGINT NOT NULL
+                                        REFERENCES products(id),
+
+                                    product_name VARCHAR(150) NOT NULL,
+
+                                    unit VARCHAR(20),
+
                                     unit_price DECIMAL(12,2) NOT NULL,
-                                    total DECIMAL(12,2) NOT NULL
+
+                                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                    deleted_at TIMESTAMP
 );
 
 -- ============================================
@@ -192,13 +207,20 @@ CREATE TABLE invoice_line_items (
 
 CREATE TABLE payments (
                           id BIGSERIAL PRIMARY KEY,
-                          invoice_id BIGINT NOT NULL REFERENCES invoices(id) ON DELETE CASCADE,
+
+                          invoice_id BIGINT NOT NULL
+                              REFERENCES invoices(id)
+                                  ON DELETE CASCADE,
+
                           payment_date DATE,
                           amount DECIMAL(12,2) NOT NULL,
                           payment_method VARCHAR(30),
                           transaction_reference VARCHAR(100),
                           remarks TEXT,
-                          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+                          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                          deleted_at TIMESTAMP
 );
 
 -- ============================================
@@ -207,10 +229,15 @@ CREATE TABLE payments (
 
 CREATE TABLE analytics_cache (
                                  id BIGSERIAL PRIMARY KEY,
+
                                  company_id BIGINT NOT NULL REFERENCES companies(id),
+
                                  analysis_type VARCHAR(50),
                                  period_start DATE,
                                  period_end DATE,
                                  analysis_json JSONB,
-                                 generated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+                                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                 deleted_at TIMESTAMP
 );
