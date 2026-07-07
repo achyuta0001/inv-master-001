@@ -1,8 +1,11 @@
 package com.inv.invmaster001.service;
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -12,8 +15,7 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    // MUST be Base64 encoded secret (important fix)
-    //TODO:remove hardcode;
+    // TODO: move to application.properties
     private final String SECRET =
             "bWktc2VjcmV0LWtleS1mb3Itand0LWF1dGgtc3lzdGVtLTIwMjY=";
 
@@ -21,43 +23,56 @@ public class JwtService {
     private final long refreshExpiration = 1000L * 60 * 60 * 24 * 7; // 7 days
 
     private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(SECRET));
+        return Keys.hmacShaKeyFor(
+                Decoders.BASE64.decode(SECRET)
+        );
     }
 
-    // ACCESS TOKEN
     public String generateAccessToken(UserDetails user) {
-        return generateToken(user.getUsername(), accessExpiration);
+        return generateToken(user, accessExpiration);
     }
 
-    // REFRESH TOKEN
     public String generateRefreshToken(UserDetails user) {
-        return generateToken(user.getUsername(), refreshExpiration);
+        return generateToken(user, refreshExpiration);
     }
 
-    private String generateToken(String subject, long expiry) {
+    private String generateToken(UserDetails user, long expiry) {
+
+        String role = user.getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .findFirst()
+                .orElse(null);
+
         return Jwts.builder()
-                .setSubject(subject)
+                .setSubject(user.getUsername())
+                .claim("role", role)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expiry))
+                .setExpiration(
+                        new Date(System.currentTimeMillis() + expiry)
+                )
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public String extractUsername(String token) {
+    public Claims extractClaims(String token) {
+
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+                .getBody();
+    }
+
+    public String extractUsername(String token) {
+
+        return extractClaims(token).getSubject();
     }
 
     public boolean isValid(String token) {
+
         try {
-            Jwts.parserBuilder()
-                    .setSigningKey(getSigningKey())
-                    .build()
-                    .parseClaimsJws(token);
+            extractClaims(token);
             return true;
         } catch (Exception e) {
             return false;
