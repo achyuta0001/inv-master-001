@@ -191,6 +191,8 @@ CREATE TABLE invoices (
 
                           subtotal DECIMAL(12,2) DEFAULT 0,
 
+                          po_number VARCHAR(30),
+
                           cgst DECIMAL(12,2) DEFAULT 0,
 
                           sgst DECIMAL(12,2) DEFAULT 0,
