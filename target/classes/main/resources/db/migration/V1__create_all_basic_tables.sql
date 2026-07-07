@@ -191,6 +191,8 @@ CREATE TABLE invoices (
 
                           subtotal DECIMAL(12,2) DEFAULT 0,
 
+                          po_number VARCHAR(30),
+
                           cgst DECIMAL(12,2) DEFAULT 0,
 
                           sgst DECIMAL(12,2) DEFAULT 0,
@@ -219,8 +221,7 @@ CREATE TABLE invoice_line_items (
                                         REFERENCES invoices(id)
                                             ON DELETE CASCADE,
 
-                                    product_id BIGINT NOT NULL
-                                        REFERENCES products(id),
+                                    product_id BIGINT NOT NULL,
 
                                     product_name VARCHAR(150) NOT NULL,
 

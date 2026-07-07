@@ -40,10 +40,6 @@ public class Product {
     private List<ProductPriceHistory> priceHistory = new ArrayList<>();
 
 
-    @OneToMany(mappedBy = "product")
-    private List<InvoiceLineItem> invoiceLineItems = new ArrayList<>();
-
-
     @Column(name = "product_name")
     private String productName;
 

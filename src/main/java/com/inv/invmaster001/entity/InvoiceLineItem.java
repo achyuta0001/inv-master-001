@@ -38,9 +38,7 @@ public class InvoiceLineItem {
     @JoinColumn(name = "invoice_id", nullable = false)
     private Invoice invoice;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+    private Long product_id;
 
     private String productName;
 

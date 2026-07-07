@@ -6,9 +6,5 @@ import com.inv.invmaster001.entity.InvoiceLineItem;
 
 @Repository
 public interface InvoiceLineItemRepository extends JpaRepository<InvoiceLineItem, Long> {
-    // Find by invoice
-    java.util.List<InvoiceLineItem> findByInvoiceId(Long invoiceId);
 
-    // Find by product
-    java.util.List<InvoiceLineItem> findByProductId(Long productId);
 }

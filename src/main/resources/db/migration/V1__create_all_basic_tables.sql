@@ -221,8 +221,7 @@ CREATE TABLE invoice_line_items (
                                         REFERENCES invoices(id)
                                             ON DELETE CASCADE,
 
-                                    product_id BIGINT NOT NULL
-                                        REFERENCES products(id),
+                                    product_id BIGINT NOT NULL,
 
                                     product_name VARCHAR(150) NOT NULL,
 
