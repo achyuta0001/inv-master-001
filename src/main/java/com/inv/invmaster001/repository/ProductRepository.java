@@ -22,4 +22,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             Long productId,
             Long companyId
     );
+
+    Optional<Product> findByIdAndCompanyIdAndDeletedAtIsNull(Long id, Long companyId);
 }

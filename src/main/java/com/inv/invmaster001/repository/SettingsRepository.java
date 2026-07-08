@@ -13,4 +13,6 @@ public interface SettingsRepository extends JpaRepository<Settings, Long> {
 
     Optional<Settings> findByCompanyId(Long companyId);
 
+
+
 }
