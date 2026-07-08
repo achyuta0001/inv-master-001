@@ -1,26 +1,13 @@
 package com.inv.invmaster001.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+
+import jakarta.persistence.*;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- * InvoiceLineItem entity mapped from the invoice_line_items table.
- */
+
 @Entity
 @Table(name = "invoice_line_items")
 @Getter
@@ -30,23 +17,70 @@ import java.time.LocalDateTime;
 @Builder
 public class InvoiceLineItem {
 
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "invoice_id", nullable = false)
     private Invoice invoice;
 
-    private Long product_id;
+
+
+    @Column(name = "product_id")
+    private Long productId;
+
+
 
     private String productName;
 
-    @Column(name = "quantity", precision = 12, scale = 2, nullable = false)
+
+
+    @Column(
+            precision = 12,
+            scale = 2,
+            nullable = false
+    )
     private BigDecimal quantity;
 
+
+
+    @Column(
+            precision = 12,
+            scale = 2,
+            nullable = false
+    )
     private BigDecimal unitPrice;
 
+
+
     private LocalDateTime createdAt;
+
+
     private LocalDateTime updatedAt;
+
+
+
+    @PrePersist
+    public void prePersist() {
+
+        LocalDateTime now = LocalDateTime.now();
+
+        this.createdAt = now;
+        this.updatedAt = now;
+
+    }
+
+
+
+    @PreUpdate
+    public void preUpdate() {
+
+        this.updatedAt = LocalDateTime.now();
+
+    }
+
 }

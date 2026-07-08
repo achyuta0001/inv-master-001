@@ -1,15 +1,16 @@
 package com.inv.invmaster001.dto.entitydto;
 
-import java.time.LocalDateTime;
-
-/**
- * Data Transfer Object for InvoiceSequence entity.
- */
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+
+import java.time.LocalDateTime;
+
+/**
+ * Data Transfer Object for InvoiceSequence entity.
+ */
 
 @Getter
 @Setter

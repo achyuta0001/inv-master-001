@@ -68,9 +68,8 @@ public class SettingsService {
     }
 
 
-
     public SettingsResponse updateSettings(Company company,
-            UpdateSettingsRequest request) {
+                                           UpdateSettingsRequest request) {
 
 
         Settings settings = settingsRepository
@@ -91,8 +90,6 @@ public class SettingsService {
 
         return mapToResponse(settingsRepository.save(settings));
     }
-
-
 
 
     public void deleteSettings(Company company) {

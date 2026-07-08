@@ -17,7 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-    public class UpdateProductRequest {
+public class UpdateProductRequest {
 
     @NotBlank
     private String productName;

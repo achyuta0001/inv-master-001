@@ -23,7 +23,10 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -35,7 +38,6 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final CompanyRepository companyRepository;
-
 
 
     // =========================================================
@@ -50,7 +52,6 @@ public class ProductService {
                 .toList();
 
     }
-
 
 
     // =========================================================
@@ -70,7 +71,6 @@ public class ProductService {
                                 ));
 
 
-
         boolean productExists =
                 productRepository
                         .existsByCompanyIdAndProductNameIgnoreCase(
@@ -79,14 +79,13 @@ public class ProductService {
                         );
 
 
-        if(productExists){
+        if (productExists) {
 
             throw new RuntimeException(
                     "Product already exists"
             );
 
         }
-
 
 
         Product product = new Product();
@@ -97,7 +96,6 @@ public class ProductService {
         product.setActive(true);
 
 
-
         addNewProductPriceVersion(
                 product,
                 request.getManufacturingCost(),
@@ -105,10 +103,9 @@ public class ProductService {
         );
 
 
+        if (request.getMaterials() != null) {
 
-        if(request.getMaterials()!=null){
-
-            for(MaterialRequest req : request.getMaterials()){
+            for (MaterialRequest req : request.getMaterials()) {
 
 
                 Material material = new Material();
@@ -120,9 +117,7 @@ public class ProductService {
                 material.setActive(true);
 
 
-
                 product.addMaterial(material);
-
 
 
                 addNewMaterialPriceVersion(
@@ -135,10 +130,8 @@ public class ProductService {
         }
 
 
-
         Product saved =
                 productRepository.save(product);
-
 
 
         return ProductResponse.builder()
@@ -147,6 +140,7 @@ public class ProductService {
                 .build();
 
     }
+
     // =========================================================
     // UPDATE PRODUCT
     // =========================================================
@@ -164,10 +158,9 @@ public class ProductService {
                                 ));
 
 
-
-        if(!product.getCompany()
+        if (!product.getCompany()
                 .getId()
-                .equals(companyId)){
+                .equals(companyId)) {
 
             throw new RuntimeException(
                     "You cannot access this product"
@@ -191,24 +184,22 @@ public class ProductService {
         );
 
 
-
-        if(request.getManufacturingCost()!=null
+        if (request.getManufacturingCost() != null
                 &&
-                request.getSellingPrice()!=null){
+                request.getSellingPrice() != null) {
 
 
             ProductPriceHistory latestPrice =
                     product.getPriceHistory()
                             .stream()
                             .filter(history ->
-                                    history.getEffectiveTo()==null)
+                                    history.getEffectiveTo() == null)
                             .findFirst()
                             .orElse(null);
 
 
-
             boolean priceChanged =
-                    latestPrice==null
+                    latestPrice == null
                             ||
                             latestPrice.getManufacturingCost()
                                     .compareTo(request.getManufacturingCost()) != 0
@@ -217,8 +208,7 @@ public class ProductService {
                                     .compareTo(request.getSellingPrice()) != 0;
 
 
-
-            if(priceChanged){
+            if (priceChanged) {
 
                 addNewProductPriceVersion(
                         product,
@@ -231,16 +221,13 @@ public class ProductService {
         }
 
 
-
         syncMaterials(
                 product,
                 request.getMaterials()
         );
 
 
-
         productRepository.save(product);
-
 
 
         return ProductResponse.builder()
@@ -255,7 +242,7 @@ public class ProductService {
 
     public void deleteProduct(
             Long productId,
-            Long companyId){
+            Long companyId) {
 
 
         Product product =
@@ -266,10 +253,9 @@ public class ProductService {
                                 ));
 
 
-
-        if(!product.getCompany()
+        if (!product.getCompany()
                 .getId()
-                .equals(companyId)){
+                .equals(companyId)) {
 
             throw new RuntimeException(
                     "You cannot access this product"
@@ -278,10 +264,8 @@ public class ProductService {
         }
 
 
-
         product.setActive(false);
         product.setDeletedAt(LocalDateTime.now());
-
 
 
         product.getMaterials()
@@ -293,12 +277,9 @@ public class ProductService {
                 });
 
 
-
         productRepository.save(product);
 
     }
-
-
 
 
     // =========================================================
@@ -308,18 +289,16 @@ public class ProductService {
     private void addNewProductPriceVersion(
             Product product,
             BigDecimal manufacturingCost,
-            BigDecimal sellingPrice){
-
+            BigDecimal sellingPrice) {
 
 
         product.getPriceHistory()
                 .stream()
                 .filter(history ->
-                        history.getEffectiveTo()==null)
+                        history.getEffectiveTo() == null)
                 .findFirst()
                 .ifPresent(history ->
                         history.setEffectiveTo(LocalDate.now()));
-
 
 
         ProductPriceHistory history =
@@ -338,13 +317,9 @@ public class ProductService {
                         .build();
 
 
-
         product.addPriceHistory(history);
 
     }
-
-
-
 
 
     // =========================================================
@@ -353,38 +328,34 @@ public class ProductService {
 
     private void syncMaterials(
             Product product,
-            List<MaterialRequest> requests){
+            List<MaterialRequest> requests) {
 
 
-        if(requests==null){
+        if (requests == null) {
             return;
         }
 
 
-
-        Map<Long,Material> existingMaterials =
+        Map<Long, Material> existingMaterials =
                 product.getMaterials()
                         .stream()
                         .filter(material ->
-                                material.getId()!=null)
+                                material.getId() != null)
                         .collect(Collectors.toMap(
                                 Material::getId,
                                 material -> material
                         ));
 
 
-
         Set<Long> incomingIds = new HashSet<>();
 
 
-
-        for(MaterialRequest request : requests){
-
+        for (MaterialRequest request : requests) {
 
 
             // NEW MATERIAL
 
-            if(request.getId()==null){
+            if (request.getId() == null) {
 
 
                 Material material = new Material();
@@ -396,9 +367,7 @@ public class ProductService {
                 material.setActive(true);
 
 
-
                 product.addMaterial(material);
-
 
 
                 addNewMaterialPriceVersion(
@@ -407,12 +376,9 @@ public class ProductService {
                 );
 
 
-
                 continue;
 
             }
-
-
 
 
             // EXISTING MATERIAL
@@ -420,28 +386,24 @@ public class ProductService {
             incomingIds.add(request.getId());
 
 
-
             Material material =
                     existingMaterials.get(request.getId());
 
 
-
-            if(material==null){
+            if (material == null) {
                 continue;
             }
 
 
-
             boolean priceChanged =
-                    material.getCurrentPrice()==null
+                    material.getCurrentPrice() == null
                             ||
-                            request.getCurrentPrice()==null
+                            request.getCurrentPrice() == null
                             ||
                             material.getCurrentPrice()
                                     .compareTo(
                                             request.getCurrentPrice()
-                                    )!=0;
-
+                                    ) != 0;
 
 
             material.setMaterialName(
@@ -457,8 +419,7 @@ public class ProductService {
             );
 
 
-
-            if(priceChanged){
+            if (priceChanged) {
 
 
                 material.setCurrentPrice(
@@ -476,14 +437,12 @@ public class ProductService {
         }
 
 
-
-
         // SOFT DELETE REMOVED MATERIALS
 
         product.getMaterials()
                 .stream()
                 .filter(material ->
-                        material.getId()!=null
+                        material.getId() != null
                                 &&
                                 !incomingIds.contains(material.getId()))
                 .forEach(material -> {
@@ -498,30 +457,24 @@ public class ProductService {
     }
 
 
-
-
-
     // =========================================================
     // MATERIAL PRICE HISTORY
     // =========================================================
 
     private void addNewMaterialPriceVersion(
             Material material,
-            BigDecimal price){
-
+            BigDecimal price) {
 
 
         material.getPriceHistory()
                 .stream()
                 .filter(history ->
-                        history.getEffectiveTo()==null)
+                        history.getEffectiveTo() == null)
                 .findFirst()
                 .ifPresent(history ->
                         history.setEffectiveTo(
                                 LocalDate.now()
                         ));
-
-
 
 
         MaterialPriceHistory history =
@@ -533,13 +486,9 @@ public class ProductService {
                         .build();
 
 
-
         material.addPriceHistory(history);
 
     }
-
-
-
 
 
     // =========================================================
@@ -548,12 +497,12 @@ public class ProductService {
 
     private BigDecimal calculateProfitMargin(
             BigDecimal manufacturingCost,
-            BigDecimal sellingPrice){
+            BigDecimal sellingPrice) {
 
 
-        if(manufacturingCost==null
+        if (manufacturingCost == null
                 ||
-                manufacturingCost.compareTo(BigDecimal.ZERO)==0){
+                manufacturingCost.compareTo(BigDecimal.ZERO) == 0) {
 
             return BigDecimal.ZERO;
 
@@ -568,12 +517,9 @@ public class ProductService {
                         RoundingMode.HALF_UP
                 )
                 .multiply(BigDecimal.valueOf(100))
-                .setScale(2,RoundingMode.HALF_UP);
+                .setScale(2, RoundingMode.HALF_UP);
 
     }
-
-
-
 
 
     // =========================================================
@@ -581,18 +527,16 @@ public class ProductService {
     // =========================================================
 
     private ProductFullResponse mapToFullResponse(
-            Product product){
-
+            Product product) {
 
 
         ProductPriceHistory latestPrice =
                 product.getPriceHistory()
                         .stream()
                         .filter(history ->
-                                history.getEffectiveTo()==null)
+                                history.getEffectiveTo() == null)
                         .findFirst()
                         .orElse(null);
-
 
 
         List<MaterialResponse> materials =
@@ -611,24 +555,23 @@ public class ProductService {
                         .toList();
 
 
-
         return ProductFullResponse.builder()
                 .productId(product.getId())
                 .productName(product.getProductName())
                 .description(product.getDescription())
                 .active(product.getActive())
                 .manufacturingCost(
-                        latestPrice!=null
+                        latestPrice != null
                                 ? latestPrice.getManufacturingCost()
                                 : null
                 )
                 .sellingPrice(
-                        latestPrice!=null
+                        latestPrice != null
                                 ? latestPrice.getSellingPrice()
                                 : null
                 )
                 .profitMargin(
-                        latestPrice!=null
+                        latestPrice != null
                                 ? latestPrice.getProfitMargin()
                                 : null
                 )

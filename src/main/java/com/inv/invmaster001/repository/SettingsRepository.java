@@ -11,4 +11,6 @@ public interface SettingsRepository extends JpaRepository<Settings, Long> {
 
     Optional<Settings> findByCompanyIdAndDeletedAtIsNull(Long companyId);
 
+    Optional<Settings> findByCompanyId(Long companyId);
+
 }

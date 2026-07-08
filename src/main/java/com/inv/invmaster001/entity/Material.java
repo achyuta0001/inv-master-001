@@ -88,7 +88,6 @@ public class Material {
     private LocalDateTime deletedAt;
 
 
-
     // ============================
     // PRICE HISTORY HELPER
     // ============================
@@ -107,7 +106,6 @@ public class Material {
         history.setMaterial(null);
 
     }
-
 
 
     // ============================

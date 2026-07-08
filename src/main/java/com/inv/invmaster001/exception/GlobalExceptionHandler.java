@@ -2,10 +2,11 @@ package com.inv.invmaster001.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -42,7 +43,8 @@ public class GlobalExceptionHandler {
 
     /**
      * Handle RuntimeException globally.
-     * @param ex the exception
+     *
+     * @param ex      the exception
      * @param request the current request
      * @return ResponseEntity with error details
      */
@@ -59,7 +61,8 @@ public class GlobalExceptionHandler {
 
     /**
      * Handle BadCredentialsException globally.
-     * @param ex the exception
+     *
+     * @param ex      the exception
      * @param request the current request
      * @return ResponseEntity with error details
      */
@@ -76,7 +79,8 @@ public class GlobalExceptionHandler {
 
     /**
      * Handle DisabledException globally.
-     * @param ex the exception
+     *
+     * @param ex      the exception
      * @param request the current request
      * @return ResponseEntity with error details
      */
@@ -93,7 +97,8 @@ public class GlobalExceptionHandler {
 
     /**
      * Handle LockedException globally.
-     * @param ex the exception
+     *
+     * @param ex      the exception
      * @param request the current request
      * @return ResponseEntity with error details
      */
@@ -110,7 +115,8 @@ public class GlobalExceptionHandler {
 
     /**
      * Handle AuthenticationCredentialsNotFoundException globally.
-     * @param ex the exception
+     *
+     * @param ex      the exception
      * @param request the current request
      * @return ResponseEntity with error details
      */
@@ -127,7 +133,8 @@ public class GlobalExceptionHandler {
 
     /**
      * Handle UsernameNotFoundException globally.
-     * @param ex the exception
+     *
+     * @param ex      the exception
      * @param request the current request
      * @return ResponseEntity with error details
      */
@@ -144,7 +151,8 @@ public class GlobalExceptionHandler {
 
     /**
      * Handle AuthenticationException globally (catch-all for other auth exceptions).
-     * @param ex the exception
+     *
+     * @param ex      the exception
      * @param request the current request
      * @return ResponseEntity with error details
      */
@@ -161,7 +169,8 @@ public class GlobalExceptionHandler {
 
     /**
      * Handle AccessDeniedException globally.
-     * @param ex the exception
+     *
+     * @param ex      the exception
      * @param request the current request
      * @return ResponseEntity with error details
      */
@@ -178,7 +187,8 @@ public class GlobalExceptionHandler {
 
     /**
      * Handle Exception globally.
-     * @param ex the exception
+     *
+     * @param ex      the exception
      * @param request the current request
      * @return ResponseEntity with error details
      */
@@ -195,7 +205,8 @@ public class GlobalExceptionHandler {
 
     /**
      * Handle IllegalArgumentException globally.
-     * @param ex the exception
+     *
+     * @param ex      the exception
      * @param request the current request
      * @return ResponseEntity with error details
      */
@@ -212,7 +223,8 @@ public class GlobalExceptionHandler {
 
     /**
      * Handle IllegalStateException globally.
-     * @param ex the exception
+     *
+     * @param ex      the exception
      * @param request the current request
      * @return ResponseEntity with error details
      */
@@ -229,7 +241,8 @@ public class GlobalExceptionHandler {
 
     /**
      * Handle NullPointerException globally.
-     * @param ex the exception
+     *
+     * @param ex      the exception
      * @param request the current request
      * @return ResponseEntity with error details
      */

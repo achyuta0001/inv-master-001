@@ -24,10 +24,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth")
 public class AuthController {
 
-    @Autowired private AuthenticationManager authenticationManager;
-    @Autowired private JwtService jwtService;
-    @Autowired private CustomUserDetailsService userDetailsService;
-    @Autowired private AuthService authService;
+    @Autowired
+    private AuthenticationManager authenticationManager;
+    @Autowired
+    private JwtService jwtService;
+    @Autowired
+    private CustomUserDetailsService userDetailsService;
+    @Autowired
+    private AuthService authService;
 
     // LOGIN
     @PostMapping("/login")
@@ -73,7 +77,7 @@ public class AuthController {
     }
 
     @PostMapping("/company/register")
-    public ResponseEntity<RegisterCommonResponse> registerCompany(@RequestBody RegisterCompanyRequest request){
+    public ResponseEntity<RegisterCommonResponse> registerCompany(@RequestBody RegisterCompanyRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(authService.registerCompany(request));
     }
