@@ -3,6 +3,7 @@ package com.inv.invmaster001.service;
 import com.inv.invmaster001.dto.request.invoice.CreateInvoiceRequest;
 import com.inv.invmaster001.dto.request.invoice.InvoiceItemRequest;
 import com.inv.invmaster001.dto.response.invoice.InvoiceLineItemResponse;
+import com.inv.invmaster001.dto.response.invoice.InvoicePdfResponse;
 import com.inv.invmaster001.dto.response.invoice.InvoiceResponse;
 import com.inv.invmaster001.entity.Company;
 import com.inv.invmaster001.entity.Customer;
@@ -20,6 +21,8 @@ import com.inv.invmaster001.repository.InvoiceSequenceRepository;
 import com.inv.invmaster001.repository.ProductPriceHistoryRepository;
 import com.inv.invmaster001.repository.ProductRepository;
 import com.inv.invmaster001.repository.SettingsRepository;
+import com.inv.invmaster001.repository.UserRepository;
+import com.inv.invmaster001.service.document.InvoiceDocumentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,6 +49,10 @@ public class InvoiceService {
     private final SettingsRepository settingsRepository;
 
     private final CustomerRepository customerRepository;
+
+    private final InvoiceDocumentService invoiceDocumentService;
+
+    private final UserRepository userRepository;
 
     // =========================================================
     // CREATE INVOICE
@@ -208,6 +215,7 @@ public class InvoiceService {
                         .subtract(discount);
 
         invoice.setSubtotal(subtotal);
+        invoice.setPoNumber(request.getPoNumber());
         invoice.setCgst(cgst);
         invoice.setSgst(sgst);
         invoice.setGrandTotal(grandTotal);
@@ -236,23 +244,6 @@ public class InvoiceService {
         );
 
 
-        // =====================================================
-        // PDF GENERATION PLACEHOLDER
-        // =====================================================
-
-        /*
-            NEXT STEP:
-
-            invoiceDocumentService.generatePdf(
-                    savedInvoice,
-                    company,
-                    customer,
-                    itemResponses
-            );
-
-            If PDF generation fails,
-            transaction will rollback automatically.
-         */
 
 
         invoiceRepository.save(savedInvoice);
@@ -373,5 +364,45 @@ public class InvoiceService {
                 invoiceId
         );
     }
+    @Transactional(readOnly = true)
+    public InvoicePdfResponse downloadPdf(
+            Long invoiceId,
+            Long userId) {
 
+        User currentUser = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Company company = currentUser.getCompany();
+
+
+        Invoice invoice =
+                invoiceRepository
+                        .findById(invoiceId)
+                        .orElseThrow(() ->
+                                new RuntimeException("Invoice not found"));
+
+        if (!invoice.getCompany().getId().equals(company.getId())) {
+            throw new RuntimeException("Invoice does not belong to your company");
+        }
+
+        Customer customer =
+                customerRepository
+                        .findByIdAndCompanyIdAndDeletedAtIsNull(
+                                invoice.getCustomerId(),
+                                company.getId()
+                        )
+                        .orElseThrow(() ->
+                                new RuntimeException("Customer not found"));
+
+        byte[ ] pdf= invoiceDocumentService.generatePdf(
+                invoice,
+                company,
+                customer
+        );
+        return new InvoicePdfResponse(
+                invoice.getInvoiceNumber() + ".pdf",
+                pdf
+        );
+
+    }
 }

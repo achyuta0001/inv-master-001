@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8"/>
+
+    <title>Invoice</title>
+
+    <style>
+
+        @page{
+            size:A4;
+            margin:20mm;
+        }
+
+        *{
+            box-sizing:border-box;
+        }
+
+        body{
+            font-family:Arial,Helvetica,sans-serif;
+            font-size:11px;
+            color:#333333;
+            margin:0;
+            padding:0;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+        }
+
+        p{
+            margin:3px 0;
+        }
+
+        h1,h2,h3,h4{
+            margin:0;
+        }
+
+        .header-table{
+            width:100%;
+            border-bottom:2px solid #444;
+            margin-bottom:20px;
+        }
+
+        .logo-column{
+            width:18%;
+            text-align:center;
+            vertical-align:top;
+        }
+
+        .company-column{
+            width:82%;
+            vertical-align:top;
+        }
+
+        .company-logo{
+            width:90px;
+            height:90px;
+            object-fit:contain;
+        }
+
+        .company-name{
+            font-size:24px;
+            font-weight:bold;
+            color:#1d3557;
+            margin-bottom:6px;
+        }
+
+        .company-details{
+            line-height:18px;
+        }
+
+        .info-table{
+            margin-top:15px;
+            margin-bottom:20px;
+        }
+
+        .info-table td{
+            width:50%;
+            border:1px solid #666;
+            padding:12px;
+            vertical-align:top;
+        }
+
+        .section-title{
+            font-size:13px;
+            font-weight:bold;
+            margin-bottom:10px;
+            border-bottom:1px solid #cccccc;
+            padding-bottom:5px;
+        }
+
+        .items-table{
+            margin-top:10px;
+        }
+
+        .items-table thead{
+            display:table-header-group;
+        }
+
+        .items-table th{
+            border:1px solid #555;
+            background:#f2f2f2;
+            padding:8px;
+            text-align:center;
+            font-weight:bold;
+        }
+
+        .items-table td{
+            border:1px solid #555;
+            padding:8px;
+        }
+
+        .text-left{
+            text-align:left;
+        }
+
+        .text-center{
+            text-align:center;
+        }
+
+        .text-right{
+            text-align:right;
+        }
+
+        .items-table tr{
+            page-break-inside:avoid;
+        }
+
+        .totals-table{
+            width:40%;
+            margin-left:auto;
+            margin-top:20px;
+        }
+
+        .totals-table td{
+            border:1px solid #555;
+            padding:8px;
+        }
+
+        .totals-table td:first-child{
+            font-weight:bold;
+        }
+
+        .bank-details{
+            margin-top:35px;
+        }
+
+        .remarks{
+            margin-top:25px;
+        }
+
+        .signature{
+            margin-top:70px;
+            text-align:right;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<table class="header-table">
+
+    <tr>
+
+        <td class="logo-column">
+
+            <img
+                    th:if="${logo != null and !#strings.isEmpty(logo)}"
+                    th:src="${logo}"
+                    class="company-logo"
+                    alt="Logo"/>
+
+        </td>
+
+        <td class="company-column">
+
+            <div
+                    class="company-name"
+                    th:text="${companyName}">
+                COMPANY NAME
+            </div>
+
+            <div class="company-details">
+
+                <p
+                        th:text="${companyAddress}">
+                    Company Address
+                </p>
+
+                <p>
+
+                    <strong>Phone :</strong>
+
+                    <span
+                            th:text="${companyPhone}">
+                    </span>
+
+                </p>
+
+                <p>
+
+                    <strong>Email :</strong>
+
+                    <span
+                            th:text="${companyEmail}">
+                    </span>
+
+                </p>
+
+                <p>
+
+                    <strong>GSTIN :</strong>
+
+                    <span
+                            th:text="${companyGst}">
+                    </span>
+
+                </p>
+
+            </div>
+
+        </td>
+
+    </tr>
+
+</table>
+
+<table class="info-table">
+
+    <tr>
+
+        <td>
+
+            <div class="section-title">
+
+                Invoice Details
+
+            </div>
+
+            <p>
+
+                <strong>Invoice Number :</strong>
+
+                <span
+                        th:text="${invoiceNumber}">
+                </span>
+
+            </p>
+
+            <p>
+
+                <strong>Invoice Date :</strong>
+
+                <span
+                        th:text="${invoiceDate}">
+                </span>
+
+            </p>
+
+            <p>
+
+                <strong>PO Number :</strong>
+
+                <span
+                        th:text="${poNumber}">
+                </span>
+
+            </p>
+
+        </td>
+
+        <td>
+
+            <div class="section-title">
+
+                Bill To
+
+            </div>
+
+            <p>
+
+                <strong>Name :</strong>
+
+                <span
+                        th:text="${customerName}">
+                </span>
+
+            </p>
+
+            <p>
+
+                <strong>Address :</strong>
+
+                <span
+                        th:text="${customerAddress}">
+                </span>
+
+            </p>
+
+            <p>
+
+                <strong>Phone :</strong>
+
+                <span
+                        th:text="${customerPhone}">
+                </span>
+
+            </p>
+
+            <p>
+
+                <strong>Email :</strong>
+
+                <span
+                        th:text="${customerEmail}">
+                </span>
+
+            </p>
+
+            <p>
+
+                <strong>GST :</strong>
+
+                <span
+                        th:text="${customerGst}">
+                </span>
+
+            </p>
+
+        </td>
+
+    </tr>
+
+</table>
+<table class="items-table">
+
+    <thead>
+
+    <tr>
+
+        <th style="width:8%;">Sl No</th>
+
+        <th style="width:44%;">Product</th>
+
+        <th style="width:12%;">Qty</th>
+
+        <th style="width:18%;">Unit Price</th>
+
+        <th style="width:18%;">Amount</th>
+
+    </tr>
+
+    </thead>
+
+    <tbody>
+
+    <tr th:each="item : ${items}">
+
+        <td class="text-center"
+            th:text="${item.serialNumber}">
+            1
+        </td>
+
+        <td class="text-left"
+            th:text="${item.productName}">
+            Product
+        </td>
+
+        <td class="text-center"
+            th:text="${item.quantity}">
+            1
+        </td>
+
+        <td class="text-right"
+            th:text="${#numbers.formatDecimal(item.unitPrice,1,'COMMA',2,'POINT')}">
+            0.00
+        </td>
+
+        <td class="text-right"
+            th:text="${#numbers.formatDecimal(item.totalPrice,1,'COMMA',2,'POINT')}">
+            0.00
+        </td>
+
+    </tr>
+
+    </tbody>
+
+</table>
+
+<table class="totals-table">
+
+    <tr>
+
+        <td>Subtotal</td>
+
+        <td class="text-right"
+            th:text="${#numbers.formatDecimal(subtotal,1,'COMMA',2,'POINT')}">
+            0.00
+        </td>
+
+    </tr>
+
+    <tr>
+
+        <td>CGST</td>
+
+        <td class="text-right"
+            th:text="${#numbers.formatDecimal(cgst,1,'COMMA',2,'POINT')}">
+            0.00
+        </td>
+
+    </tr>
+
+    <tr>
+
+        <td>SGST</td>
+
+        <td class="text-right"
+            th:text="${#numbers.formatDecimal(sgst,1,'COMMA',2,'POINT')}">
+            0.00
+        </td>
+
+    </tr>
+
+    <tr>
+
+        <td>Discount</td>
+
+        <td class="text-right"
+            th:text="${#numbers.formatDecimal(discount,1,'COMMA',2,'POINT')}">
+            0.00
+        </td>
+
+    </tr>
+
+    <tr>
+
+        <td style="font-size:12px;">
+
+            Grand Total
+
+        </td>
+
+        <td class="text-right"
+            style="font-size:12px;font-weight:bold;"
+            th:text="${#numbers.formatDecimal(grandTotal,1,'COMMA',2,'POINT')}">
+            0.00
+        </td>
+
+    </tr>
+
+</table>
+
+<div class="bank-details">
+
+    <div class="section-title">
+
+        Bank Details
+
+    </div>
+
+    <table>
+
+        <tr>
+
+            <td style="width:25%;border:none;">
+
+                <strong>Bank</strong>
+
+            </td>
+
+            <td style="border:none;"
+                th:text="${bankName}">
+                HDFC Bank
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td style="border:none;">
+
+                <strong>Account Number</strong>
+
+            </td>
+
+            <td style="border:none;"
+                th:text="${accountNumber}">
+                1234567890
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td style="border:none;">
+
+                <strong>IFSC</strong>
+
+            </td>
+
+            <td style="border:none;"
+                th:text="${ifsc}">
+                HDFC0001234
+            </td>
+
+        </tr>
+
+    </table>
+
+</div>
+
+<div class="remarks"
+     th:if="${remarks != null and !#strings.isEmpty(remarks)}">
+
+    <div class="section-title">
+
+        Remarks
+
+    </div>
+
+    <p th:text="${remarks}">
+        Remarks
+    </p>
+
+</div>
+
+<table style="margin-top:60px;">
+
+    <tr>
+
+        <td style="width:60%;border:none;vertical-align:bottom;">
+
+            <strong>Thank you for your business!</strong>
+
+        </td>
+
+        <td style="width:40%;border:none;text-align:center;vertical-align:bottom;">
+
+            <br/>
+            <br/>
+            <br/>
+
+            _______________________
+
+            <br/>
+            <br/>
+
+            <strong>Authorized Signature</strong>
+
+        </td>
+
+    </tr>
+
+</table>
+
+</body>
+
+</html>
