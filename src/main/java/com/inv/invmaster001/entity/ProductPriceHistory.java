@@ -50,10 +50,11 @@ public class ProductPriceHistory {
     @Column(name = "selling_price", precision = 12, scale = 2)
     private BigDecimal sellingPrice;
 
+    @Column(name = "labour_charges", precision = 12, scale = 2)
+    private BigDecimal labourCharges;
 
     @Column(name = "profit_margin", precision = 5, scale = 2)
     private BigDecimal profitMargin;
-
 
     @Column(name = "effective_from")
     private LocalDate effectiveFrom;

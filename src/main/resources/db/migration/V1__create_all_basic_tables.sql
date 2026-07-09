@@ -198,6 +198,7 @@ CREATE TABLE product_price_history
         REFERENCES products (id),
 
     manufacturing_cost DECIMAL(12, 2),
+    labour_charges     DECIMAL(12,2),
     selling_price      DECIMAL(12, 2),
     profit_margin      DECIMAL(5, 2),
 

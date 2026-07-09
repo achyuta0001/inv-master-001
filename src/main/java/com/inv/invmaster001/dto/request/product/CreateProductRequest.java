@@ -4,6 +4,8 @@ package com.inv.invmaster001.dto.request.product;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,9 +27,13 @@ public class CreateProductRequest {
 
     private String description;
 
-    private BigDecimal manufacturingCost;
+    @NotNull
+    @PositiveOrZero
+    private BigDecimal labourCharges;
 
-    private BigDecimal sellingPrice;
+    @NotNull
+    @PositiveOrZero
+    private BigDecimal profitMargin;
 
     private String hsnCode;
 

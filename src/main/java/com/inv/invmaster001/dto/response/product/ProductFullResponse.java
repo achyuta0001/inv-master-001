@@ -20,6 +20,7 @@ public class ProductFullResponse {
     private Boolean active;
     private String hsnCode;
     private BigDecimal manufacturingCost;
+    private BigDecimal labourCharges;
     private BigDecimal sellingPrice;
     private BigDecimal profitMargin;
 
