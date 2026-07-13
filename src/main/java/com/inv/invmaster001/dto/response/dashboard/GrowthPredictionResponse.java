@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Getter
 @Setter
@@ -15,24 +16,18 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class GrowthPredictionResponse {
 
-    /**
-     * Predicted revenue for the next period.
-     */
-    private BigDecimal predictedRevenue;
+    private String companyHealth;
 
-    /**
-     * Expected growth percentage.
-     * Example: 12.50 means +12.5%
-     */
-    private BigDecimal predictedGrowthPercentage;
+    private BigDecimal expectedGrowthPercentage;
 
-    /**
-     * AI-generated summary.
-     */
+    private BigDecimal expectedRevenue;
+
     private String summary;
 
-    /**
-     * AI-generated recommendations.
-     */
-    private String recommendations;
+    private List<String> strengths;
+
+    private List<String> risks;
+
+    private List<String> recommendations;
+
 }

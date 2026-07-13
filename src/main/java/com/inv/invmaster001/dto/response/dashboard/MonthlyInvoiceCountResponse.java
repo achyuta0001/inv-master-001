@@ -6,21 +6,17 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
-
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TopCustomerResponse {
+public class MonthlyInvoiceCountResponse {
 
-    private Long customerId;
+    private String month;
 
-    private String customerName;
+    private Integer year;
 
     private Integer invoiceCount;
-
-    private BigDecimal revenue;
 
 }

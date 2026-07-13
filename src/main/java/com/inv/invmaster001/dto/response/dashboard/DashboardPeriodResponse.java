@@ -18,7 +18,15 @@ public class DashboardPeriodResponse {
 
     private DashboardPeriod period;
 
+    // ==========================
+    // KPI CARDS
+    // ==========================
+
     private BigDecimal revenue;
+
+    private BigDecimal collectedAmount;
+
+    private BigDecimal outstandingAmount;
 
     private Integer totalInvoices;
 
@@ -26,15 +34,28 @@ public class DashboardPeriodResponse {
 
     private BigDecimal averageInvoiceValue;
 
-    private BigDecimal collectedAmount;
-
-    private BigDecimal outstandingAmount;
-
     private BigDecimal growthPercentage;
+
+    // ==========================
+    // CHARTS
+    // ==========================
+
+    private List<MonthlyRevenueResponse> monthlyRevenue;
+
+    private List<MonthlyInvoiceCountResponse> monthlyInvoiceCount;
+
+    // ==========================
+    // TABLES
+    // ==========================
 
     private List<TopProductResponse> topProducts;
 
     private List<TopCustomerResponse> topCustomers;
 
+    // ==========================
+    // AI (Future)
+    // ==========================
+
     private GrowthPredictionResponse growthPrediction;
+
 }

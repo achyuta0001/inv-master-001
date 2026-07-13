@@ -13,13 +13,11 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TopCustomerResponse {
+public class MonthlyRevenueResponse {
 
-    private Long customerId;
+    private String month;
 
-    private String customerName;
-
-    private Integer invoiceCount;
+    private Integer year;
 
     private BigDecimal revenue;
 

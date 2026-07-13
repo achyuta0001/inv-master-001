@@ -3,6 +3,8 @@ package com.inv.invmaster001.service;
 import com.inv.invmaster001.dto.response.dashboard.DashboardPeriod;
 import com.inv.invmaster001.dto.response.dashboard.DashboardPeriodResponse;
 import com.inv.invmaster001.dto.response.dashboard.DashboardResponse;
+import com.inv.invmaster001.dto.response.dashboard.MonthlyInvoiceCountResponse;
+import com.inv.invmaster001.dto.response.dashboard.MonthlyRevenueResponse;
 import com.inv.invmaster001.dto.response.dashboard.TopCustomerResponse;
 import com.inv.invmaster001.dto.response.dashboard.TopProductResponse;
 import com.inv.invmaster001.entity.Customer;
@@ -14,6 +16,8 @@ import com.inv.invmaster001.repository.CustomerRepository;
 import com.inv.invmaster001.repository.InvoiceRepository;
 import com.inv.invmaster001.repository.InvoiceSequenceRepository;
 import com.inv.invmaster001.repository.PaymentRepository;
+import com.inv.invmaster001.util.TopProductAccumulator;
+import com.inv.invmaster001.util.TopCustomerAccumulator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,11 +25,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.TextStyle;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -54,10 +62,13 @@ public class DashboardService {
                 customerRepository
                         .findByCompanyIdAndDeletedAtIsNull(companyId);
 
-        List<Payment> payments = invoices.stream()
-                .flatMap(invoice ->
-                        paymentRepository.findByInvoiceId(invoice.getId()).stream())
-                .toList();
+        List<Payment> payments =
+                invoices.stream()
+                        .flatMap(invoice ->
+                                paymentRepository
+                                        .findByInvoiceId(invoice.getId())
+                                        .stream())
+                        .toList();
 
         List<DashboardPeriodResponse> periods =
                 Arrays.stream(DashboardPeriod.values())
@@ -72,6 +83,7 @@ public class DashboardService {
 
         return DashboardResponse.builder()
                 .periods(periods)
+                .growthPrediction(null)
                 .build();
     }
 
@@ -111,14 +123,14 @@ public class DashboardService {
         Integer totalInvoices =
                 filteredSequences.size();
 
+        Integer totalCustomers =
+                customers.size();
+
         BigDecimal averageInvoiceValue =
                 calculateAverageInvoiceValue(
                         revenue,
                         totalInvoices
                 );
-
-        Integer totalCustomers =
-                customers.size();
 
         BigDecimal collectedAmount =
                 calculateCollectedAmount(filteredPayments);
@@ -135,11 +147,20 @@ public class DashboardService {
                         invoiceSequences
                 );
 
+        List<MonthlyRevenueResponse> monthlyRevenue =
+                calculateMonthlyRevenue(filteredSequences);
+
+        List<MonthlyInvoiceCountResponse> monthlyInvoiceCount =
+                calculateMonthlyInvoiceCount(filteredSequences);
+
         List<TopProductResponse> topProducts =
                 calculateTopProducts(filteredSequences);
 
         List<TopCustomerResponse> topCustomers =
-                calculateTopCustomers(filteredInvoices, customers);
+                calculateTopCustomers(
+                        filteredInvoices,
+                        customers
+                );
 
         return DashboardPeriodResponse.builder()
                 .period(period)
@@ -150,9 +171,11 @@ public class DashboardService {
                 .collectedAmount(collectedAmount)
                 .outstandingAmount(outstandingAmount)
                 .growthPercentage(growthPercentage)
+                .monthlyRevenue(monthlyRevenue)
+                .monthlyInvoiceCount(monthlyInvoiceCount)
                 .topProducts(topProducts)
                 .topCustomers(topCustomers)
-                .growthPrediction(null) // AI Phase
+                .growthPrediction(null)
                 .build();
     }
     // =========================================================
@@ -208,24 +231,22 @@ public class DashboardService {
             List<Invoice> invoices,
             BigDecimal collectedAmount) {
 
-        BigDecimal totalInvoiceAmount =
+        BigDecimal invoiceAmount =
                 invoices.stream()
                         .map(Invoice::getGrandTotal)
                         .filter(Objects::nonNull)
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal outstanding =
-                totalInvoiceAmount.subtract(collectedAmount);
+                invoiceAmount.subtract(collectedAmount);
 
-        if (outstanding.compareTo(BigDecimal.ZERO) < 0) {
-            return BigDecimal.ZERO;
-        }
-
-        return outstanding;
+        return outstanding.compareTo(BigDecimal.ZERO) < 0
+                ? BigDecimal.ZERO
+                : outstanding;
     }
 
     // =========================================================
-    // GROWTH %
+    // GROWTH PERCENTAGE
     // =========================================================
 
     private BigDecimal calculateGrowthPercentage(
@@ -305,6 +326,90 @@ public class DashboardService {
         };
     }
     // =========================================================
+    // MONTHLY REVENUE
+    // =========================================================
+
+    private List<MonthlyRevenueResponse> calculateMonthlyRevenue(
+            List<InvoiceSequence> invoiceSequences) {
+
+        Map<YearMonth, BigDecimal> revenueMap = new TreeMap<>();
+
+        for (InvoiceSequence invoice : invoiceSequences) {
+
+            if (invoice.getInvoiceDate() == null ||
+                    invoice.getResponseJson() == null ||
+                    invoice.getResponseJson().getGrandTotal() == null) {
+                continue;
+            }
+
+            YearMonth yearMonth =
+                    YearMonth.from(invoice.getInvoiceDate());
+
+            revenueMap.merge(
+                    yearMonth,
+                    invoice.getResponseJson().getGrandTotal(),
+                    BigDecimal::add
+            );
+        }
+
+        return revenueMap.entrySet()
+                .stream()
+                .map(entry ->
+                        MonthlyRevenueResponse.builder()
+                                .month(entry.getKey()
+                                        .getMonth()
+                                        .getDisplayName(
+                                                TextStyle.SHORT,
+                                                Locale.ENGLISH))
+                                .year(entry.getKey().getYear())
+                                .revenue(entry.getValue())
+                                .build()
+                )
+                .toList();
+    }
+
+    // =========================================================
+    // MONTHLY INVOICE COUNT
+    // =========================================================
+
+    private List<MonthlyInvoiceCountResponse> calculateMonthlyInvoiceCount(
+            List<InvoiceSequence> invoiceSequences) {
+
+        Map<YearMonth, Integer> invoiceCountMap =
+                new TreeMap<>();
+
+        for (InvoiceSequence invoice : invoiceSequences) {
+
+            if (invoice.getInvoiceDate() == null) {
+                continue;
+            }
+
+            YearMonth yearMonth =
+                    YearMonth.from(invoice.getInvoiceDate());
+
+            invoiceCountMap.merge(
+                    yearMonth,
+                    1,
+                    Integer::sum
+            );
+        }
+
+        return invoiceCountMap.entrySet()
+                .stream()
+                .map(entry ->
+                        MonthlyInvoiceCountResponse.builder()
+                                .month(entry.getKey()
+                                        .getMonth()
+                                        .getDisplayName(
+                                                TextStyle.SHORT,
+                                                Locale.ENGLISH))
+                                .year(entry.getKey().getYear())
+                                .invoiceCount(entry.getValue())
+                                .build()
+                )
+                .toList();
+    }
+    // =========================================================
     // TOP PRODUCTS
     // =========================================================
 
@@ -331,15 +436,15 @@ public class DashboardService {
                         );
 
                 accumulator.setQuantity(
-                        accumulator.getQuantity().add(item.getQuantity())
+                        accumulator.getQuantity()
+                                .add(item.getQuantity())
                 );
 
                 accumulator.setRevenue(
-                        accumulator.getRevenue().add(item.getTotalPrice())
+                        accumulator.getRevenue()
+                                .add(item.getTotalPrice())
                 );
-
             });
-
         }
 
         return productMap.entrySet()
@@ -367,14 +472,15 @@ public class DashboardService {
             List<Invoice> invoices,
             List<Customer> customers) {
 
-        Map<Long, TopCustomerAccumulator> customerMap = new HashMap<>();
-
         Map<Long, String> customerNames =
                 customers.stream()
                         .collect(Collectors.toMap(
                                 Customer::getId,
                                 Customer::getCustomerName
                         ));
+
+        Map<Long, TopCustomerAccumulator> customerMap =
+                new HashMap<>();
 
         for (Invoice invoice : invoices) {
 
@@ -397,7 +503,6 @@ public class DashboardService {
                     accumulator.getRevenue()
                             .add(invoice.getGrandTotal())
             );
-
         }
 
         return customerMap.entrySet()
@@ -415,75 +520,4 @@ public class DashboardService {
                                 .revenue(entry.getValue().getRevenue())
                                 .build())
                 .toList();
-    }
-    // =========================================================
-    // HELPER CLASSES
-    // =========================================================
-
-    private static class TopProductAccumulator {
-
-        private final String productName;
-
-        private BigDecimal quantity = BigDecimal.ZERO;
-
-        private BigDecimal revenue = BigDecimal.ZERO;
-
-        public TopProductAccumulator(String productName) {
-            this.productName = productName;
-        }
-
-        public String getProductName() {
-            return productName;
-        }
-
-        public BigDecimal getQuantity() {
-            return quantity;
-        }
-
-        public void setQuantity(BigDecimal quantity) {
-            this.quantity = quantity;
-        }
-
-        public BigDecimal getRevenue() {
-            return revenue;
-        }
-
-        public void setRevenue(BigDecimal revenue) {
-            this.revenue = revenue;
-        }
-    }
-
-    private static class TopCustomerAccumulator {
-
-        private final String customerName;
-
-        private Integer invoiceCount = 0;
-
-        private BigDecimal revenue = BigDecimal.ZERO;
-
-        public TopCustomerAccumulator(String customerName) {
-            this.customerName = customerName;
-        }
-
-        public String getCustomerName() {
-            return customerName;
-        }
-
-        public Integer getInvoiceCount() {
-            return invoiceCount;
-        }
-
-        public void setInvoiceCount(Integer invoiceCount) {
-            this.invoiceCount = invoiceCount;
-        }
-
-        public BigDecimal getRevenue() {
-            return revenue;
-        }
-
-        public void setRevenue(BigDecimal revenue) {
-            this.revenue = revenue;
-        }
-    }
-
-}
+    }}
