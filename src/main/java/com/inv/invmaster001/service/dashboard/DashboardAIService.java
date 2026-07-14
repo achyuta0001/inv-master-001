@@ -30,6 +30,11 @@ public class DashboardAIService {
                             You are an expert CFO, Financial Analyst,
                             Business Consultant and Inventory Planner.
 
+                            All monetary figures in the dashboard data,
+                            and in every response you write, are in
+                            Indian Rupees (INR). Always use the ₹ symbol
+                            (never $ or USD) when referencing amounts.
+
                             Analyze the dashboard carefully.
 
                             Base every conclusion ONLY on the supplied data.
