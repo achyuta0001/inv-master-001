@@ -6,14 +6,19 @@ import com.inv.invmaster001.dto.response.dashboard.DashboardAIResponse;
 import com.inv.invmaster001.dto.response.dashboard.DashboardResponse;
 import com.inv.invmaster001.entity.AnalyticsCache;
 import com.inv.invmaster001.entity.Company;
+import com.inv.invmaster001.exception.RateLimitExceededException;
 import com.inv.invmaster001.repository.AnalyticsCacheRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -22,9 +27,20 @@ public class DashboardAIService {
     private static final String ANALYSIS_TYPE = "DASHBOARD_AI";
     private static final long CACHE_TTL_MINUTES = 30;
 
+    /**
+     * Short cooldown to collapse accidental double-submits / concurrent
+     * duplicate requests (e.g. double-click, multiple tabs) that could
+     * otherwise both race past the cache check and each fire a real LLM
+     * call. This is independent of, and much shorter than, the 30-minute
+     * cache above, which remains the primary cost control.
+     */
+    private static final Duration LLM_CALL_COOLDOWN = Duration.ofSeconds(5);
+
     private final ChatClient chatClient;
     private final ObjectMapper objectMapper;
     private final AnalyticsCacheRepository analyticsCacheRepository;
+
+    private final Map<Long, Instant> lastLlmCallByCompanyId = new ConcurrentHashMap<>();
 
     public DashboardAIResponse generateInsights(
             DashboardResponse dashboardResponse,
@@ -46,6 +62,12 @@ public class DashboardAIService {
                 // Fall through and regenerate if the cached payload is somehow unreadable.
             }
         }
+
+        // Cache missed (or was unreadable): we're about to make a real LLM
+        // call. Guard against a near-simultaneous duplicate request for the
+        // same company doing the same thing before this request's cache
+        // write lands.
+        enforceLlmCallCooldown(company.getId());
 
         DashboardAIResponse response = callModel(dashboardResponse);
 
@@ -69,6 +91,33 @@ public class DashboardAIService {
         }
 
         return response;
+    }
+
+    /**
+     * Rejects the call if this company made a real LLM call within the
+     * cooldown window; otherwise records this attempt as the new last call.
+     * Cache hits never reach this method, so legitimate repeated requests
+     * within the 30-minute cache TTL are unaffected.
+     */
+    private void enforceLlmCallCooldown(Long companyId) {
+        Instant now = Instant.now();
+
+        Instant[] rejectedAt = new Instant[1];
+        lastLlmCallByCompanyId.compute(companyId, (id, lastCall) -> {
+            if (lastCall != null && Duration.between(lastCall, now).compareTo(LLM_CALL_COOLDOWN) < 0) {
+                rejectedAt[0] = lastCall;
+                return lastCall;
+            }
+            return now;
+        });
+
+        if (rejectedAt[0] != null) {
+            long elapsedSeconds = Duration.between(rejectedAt[0], now).getSeconds();
+            long retryAfterSeconds = Math.max(1, LLM_CALL_COOLDOWN.getSeconds() - elapsedSeconds);
+            throw new RateLimitExceededException(
+                    "AI dashboard insights were just requested for this company. Please wait a few seconds and try again.",
+                    retryAfterSeconds);
+        }
     }
 
     private DashboardAIResponse callModel(DashboardResponse dashboardResponse) {
