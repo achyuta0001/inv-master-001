@@ -34,7 +34,10 @@ spring:
           model: llama-3.3-70b-versatile
 
 jwt:
-  secret: ${JWT_SECRET:bWktc2VjcmV0LWtleS1mb3Itand0LWF1dGgtc3lzdGVtLTIwMjY=}
+  # No default: the app must fail to start rather than silently sign tokens
+  # with a secret that is public in source control. Set JWT_SECRET in every
+  # environment (see .env.example). Generate one with: openssl rand -base64 32
+  secret: ${JWT_SECRET}
 
 server:
   port: ${PORT:8080}

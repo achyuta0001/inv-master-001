@@ -16,12 +16,13 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    // Overridable via the JWT_SECRET env var; this default only applies when
-    // Spring isn't managing the bean (e.g. `new JwtService()` in tests) or
-    // when the property/env var is unset.
-    @Value("${jwt.secret:bWktc2VjcmV0LWtleS1mb3Itand0LWF1dGgtc3lzdGVtLTIwMjY=}")
+    // Injected from the required jwt.secret property (JWT_SECRET env var). The
+    // Spring-managed bean fails fast if it is unset — it never falls back to
+    // the field initializer below, which exists ONLY as a deterministic key for
+    // unit tests that construct JwtService directly via `new JwtService()`.
+    @Value("${jwt.secret}")
     private String SECRET =
-            "bWktc2VjcmV0LWtleS1mb3Itand0LWF1dGgtc3lzdGVtLTIwMjY=";
+            "dGVzdC1vbmx5LXNlY3JldC1ub3QtdXNlZC1pbi1wcm9kdWN0aW9uLTIwMjY=";
 
     private final long accessExpiration = 1000 * 60 * 15; // 15 min
     private final long refreshExpiration = 1000L * 60 * 60 * 24 * 7; // 7 days
