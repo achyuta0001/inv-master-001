@@ -175,6 +175,7 @@ public class InvoiceService {
                             .productId(product.getId())
                             .productName(product.getProductName())
                             .hsnCode(product.getHsnCode())
+                            .poNumber(itemRequest.getPoNumber())
                             .quantity(itemRequest.getQuantity())
                             .unitPrice(unitPrice)
                             .build();
@@ -186,6 +187,7 @@ public class InvoiceService {
                             .productId(product.getId())
                             .productName(product.getProductName())
                             .hsnCode(product.getHsnCode())
+                            .poNumber(itemRequest.getPoNumber())
                             .quantity(itemRequest.getQuantity())
                             .unitPrice(unitPrice)
                             .totalPrice(lineTotal)
@@ -197,15 +199,20 @@ public class InvoiceService {
         // TAX CALCULATION
         // =====================================================
 
-        BigDecimal cgstPercentage =
-                (settings == null || settings.getCgstPercentage() == null)
-                        ? BigDecimal.ZERO
-                        : settings.getCgstPercentage();
+        // Both CGST and SGST rates must be configured and non-zero before an
+        // invoice can be generated (business rule from the PO).
+        if (settings == null
+                || settings.getCgstPercentage() == null
+                || settings.getSgstPercentage() == null
+                || settings.getCgstPercentage().compareTo(BigDecimal.ZERO) <= 0
+                || settings.getSgstPercentage().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException(
+                    "Configure non-zero CGST and SGST rates in Settings before generating an invoice");
+        }
 
-        BigDecimal sgstPercentage =
-                (settings == null || settings.getSgstPercentage() == null)
-                        ? BigDecimal.ZERO
-                        : settings.getSgstPercentage();
+        BigDecimal cgstPercentage = settings.getCgstPercentage();
+
+        BigDecimal sgstPercentage = settings.getSgstPercentage();
 
         BigDecimal cgst =
                 calculatePercentage(
@@ -229,7 +236,6 @@ public class InvoiceService {
                         .subtract(discount);
 
         invoice.setSubtotal(subtotal);
-        invoice.setPoNumber(request.getPoNumber());
         invoice.setCgstPercentage(cgstPercentage);
         invoice.setSgstPercentage(sgstPercentage);
         invoice.setCgst(cgst);
@@ -421,7 +427,6 @@ public class InvoiceService {
                             .invoiceDate(inv.getInvoiceDate())
                             .customerId(inv.getCustomerId())
                             .customerName(customerName)
-                            .poNumber(inv.getPoNumber())
                             .grandTotal(inv.getGrandTotal())
                             .status(inv.getStatus())
                             .createdByName(inv.getCreatedBy() != null ? inv.getCreatedBy().getName() : null)
@@ -447,6 +452,7 @@ public class InvoiceService {
                         .productId(li.getProductId())
                         .productName(li.getProductName())
                         .hsnCode(li.getHsnCode())
+                        .poNumber(li.getPoNumber())
                         .quantity(li.getQuantity())
                         .unitPrice(li.getUnitPrice())
                         .totalPrice(li.getQuantity().multiply(li.getUnitPrice()))
@@ -578,6 +584,7 @@ public class InvoiceService {
                         .productId(li.getProductId())
                         .productName(li.getProductName())
                         .hsnCode(li.getHsnCode())
+                        .poNumber(li.getPoNumber())
                         .quantity(li.getQuantity())
                         .unitPrice(li.getUnitPrice())
                         .totalPrice(li.getQuantity().multiply(li.getUnitPrice()))

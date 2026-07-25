@@ -20,8 +20,6 @@ public class CreateInvoiceRequest {
     @NotNull
     private Long customerId;
 
-    private String poNumber;
-
     private List<InvoiceItemRequest> items;
 
     private BigDecimal discount;

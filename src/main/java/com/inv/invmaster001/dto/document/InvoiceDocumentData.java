@@ -47,7 +47,6 @@ public class InvoiceDocumentData {
 
     private String invoiceNumber;
     private LocalDate invoiceDate;
-    private String poNumber;
 
     // =========================
     // ITEMS

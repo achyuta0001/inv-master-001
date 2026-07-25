@@ -107,11 +107,6 @@ public class InvoicePdfService {
         );
 
         context.setVariable(
-                "poNumber",
-                data.getPoNumber()
-        );
-
-        context.setVariable(
                 "items",
                 data.getItems()
         );

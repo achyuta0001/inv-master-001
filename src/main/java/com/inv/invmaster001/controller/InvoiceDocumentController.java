@@ -41,7 +41,6 @@ public class InvoiceDocumentController {
 
                 .invoiceNumber("INV-00001")
                 .invoiceDate(LocalDate.now())
-                .poNumber("PO-1001")
 
                 .subtotal(new BigDecimal("1000"))
                 .cgst(new BigDecimal("90"))
@@ -57,6 +56,7 @@ public class InvoiceDocumentController {
                         InvoiceDocumentItem.builder()
                                 .serialNumber(1)
                                 .productName("Laptop")
+                                .poNumber("PO-1001")
                                 .quantity(new BigDecimal("2"))
                                 .unitPrice(new BigDecimal("500"))
                                 .totalPrice(new BigDecimal("1000"))

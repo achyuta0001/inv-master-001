@@ -21,6 +21,8 @@ public class InvoiceDocumentItem {
 
     private String hsnCode;
 
+    private String poNumber;
+
     private BigDecimal quantity;
 
     private BigDecimal unitPrice;
