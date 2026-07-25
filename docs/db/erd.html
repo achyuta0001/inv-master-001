@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>invoice-gen — Database Schema</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script>
+  const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+  window.addEventListener('load', () => {
+    mermaid.initialize({ startOnLoad: true, theme: dark ? 'dark' : 'neutral',
+      er: { useMaxWidth: false } });
+  });
+</script>
+<style>html,body{margin:0}</style>
+</head>
+<body>
+<style>
+:root {
+  --bg:#f5f7fa; --panel:#ffffff; --panel-2:#fbfcfd; --ink:#141821; --ink-2:#3d4655;
+  --muted:#657085; --hair:#e4e8ee; --hair-2:#eef1f5;
+  --c-core:#4263eb; --c-customer:#0c8599; --c-catalog:#2f9e44; --c-sales:#e8590c; --c-analytics:#9c36b5;
+  --pk:#b8860b; --pk-bg:#fdf6e3; --danger:#e03131; --danger-bg:#fff0f0;
+  --accent:var(--c-core);
+  --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+  --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark) {
+  :root {
+    --bg:#0c0f15; --panel:#141a23; --panel-2:#101620; --ink:#e7ebf2; --ink-2:#b7c0cf;
+    --muted:#8b97ab; --hair:#232b38; --hair-2:#1b222d;
+    --c-core:#748ffc; --c-customer:#3bc9db; --c-catalog:#69db7c; --c-sales:#ff922b; --c-analytics:#da77f2;
+    --pk:#e6b800; --pk-bg:#2a2410; --danger:#ff8787; --danger-bg:#2b1414;
+  }
+}
+:root[data-theme="light"] {
+  --bg:#f5f7fa; --panel:#ffffff; --panel-2:#fbfcfd; --ink:#141821; --ink-2:#3d4655;
+  --muted:#657085; --hair:#e4e8ee; --hair-2:#eef1f5;
+  --c-core:#4263eb; --c-customer:#0c8599; --c-catalog:#2f9e44; --c-sales:#e8590c; --c-analytics:#9c36b5;
+  --pk:#b8860b; --pk-bg:#fdf6e3; --danger:#e03131; --danger-bg:#fff0f0;
+}
+:root[data-theme="dark"] {
+  --bg:#0c0f15; --panel:#141a23; --panel-2:#101620; --ink:#e7ebf2; --ink-2:#b7c0cf;
+  --muted:#8b97ab; --hair:#232b38; --hair-2:#1b222d;
+  --c-core:#748ffc; --c-customer:#3bc9db; --c-catalog:#69db7c; --c-sales:#ff922b; --c-analytics:#da77f2;
+  --pk:#e6b800; --pk-bg:#2a2410; --danger:#ff8787; --danger-bg:#2b1414;
+}
+* { box-sizing:border-box; }
+body { margin:0; }
+.wrap { background:var(--bg); color:var(--ink); font-family:var(--sans);
+  padding:clamp(20px,4vw,56px); line-height:1.5; }
+.inner { max-width:1180px; margin:0 auto; }
+.eyebrow { font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--accent); margin:0 0 10px; }
+h1 { font-size:clamp(28px,4.5vw,44px); line-height:1.05; letter-spacing:-.02em; margin:0 0 12px;
+  text-wrap:balance; font-weight:680; }
+h1 code { font-family:var(--mono); font-weight:680; }
+.lede { max-width:66ch; color:var(--ink-2); font-size:16px; margin:0 0 28px; }
+.lede code { font-family:var(--mono); font-size:.9em; background:var(--panel); padding:1px 5px;
+  border-radius:4px; border:1px solid var(--hair); }
+
+.stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin:0 0 30px; }
+.stat { background:var(--panel); border:1px solid var(--hair); border-radius:12px; padding:16px 18px; }
+.stat .n { font-family:var(--mono); font-size:30px; font-weight:600; letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums; }
+.stat .l { font-size:12.5px; color:var(--muted); margin-top:3px; }
+.stat.warn .n { color:var(--danger); }
+
+.legend { display:flex; flex-wrap:wrap; gap:10px 18px; align-items:center; padding:14px 18px;
+  background:var(--panel); border:1px solid var(--hair); border-radius:12px; margin:0 0 30px;
+  font-size:13px; color:var(--ink-2); }
+.legend b { color:var(--ink); font-weight:600; }
+.lg { display:inline-flex; align-items:center; gap:7px; }
+.ln { width:26px; height:0; border-top:2px solid var(--muted); }
+.ln.soft { border-top:2px dashed var(--danger); }
+
+.panel { background:var(--panel); border:1px solid var(--hair); border-radius:14px;
+  padding:8px 8px 4px; margin:0 0 34px; overflow-x:auto; }
+.panel .cap { font-family:var(--mono); font-size:11.5px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--muted); padding:10px 12px 4px; }
+pre.mermaid { margin:0; padding:8px 12px 14px; min-width:820px; text-align:center; }
+
+.dgroup { margin:0 0 30px; }
+.dh { display:flex; align-items:center; gap:10px; font-size:14px; letter-spacing:.02em;
+  text-transform:uppercase; font-weight:650; margin:0 0 14px; color:var(--dom); }
+.dh .dot { width:9px; height:9px; border-radius:50%; background:var(--dom); }
+.dh-n { font-family:var(--mono); font-size:12px; color:var(--muted); font-weight:500;
+  border:1px solid var(--hair); border-radius:20px; padding:1px 9px; margin-left:2px; }
+
+.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:16px; align-items:start; }
+.card { background:var(--panel); border:1px solid var(--hair); border-radius:13px; overflow:hidden;
+  border-top:3px solid var(--dom); }
+.card-h { display:flex; align-items:center; justify-content:space-between; gap:8px;
+  padding:12px 14px 8px; }
+.th { display:inline-flex; align-items:center; gap:8px; min-width:0; }
+.th .dot { width:8px; height:8px; border-radius:50%; background:var(--dom); flex:none; }
+.tname { font-family:var(--mono); font-weight:640; font-size:15px; color:var(--ink);
+  overflow:hidden; text-overflow:ellipsis; }
+.cc { font-family:var(--mono); font-size:11px; color:var(--muted); flex:none; }
+.tnote { margin:0; padding:0 14px 10px; font-size:12.5px; color:var(--muted); border-bottom:1px solid var(--hair-2); }
+.rows { display:flex; flex-direction:column; }
+.row { display:grid; grid-template-columns:minmax(120px,auto) 1fr; gap:2px 12px; align-items:baseline;
+  padding:7px 14px; border-bottom:1px solid var(--hair-2); }
+.row:last-child { border-bottom:0; }
+.cn { font-family:var(--mono); font-size:12.5px; color:var(--ink); font-weight:560; }
+.ct { font-family:var(--mono); font-size:11.5px; color:var(--muted); }
+.tags { grid-column:1 / -1; display:flex; flex-wrap:wrap; gap:4px; margin-top:2px; }
+.tags:empty { display:none; }
+.chip { font-family:var(--mono); font-size:10px; letter-spacing:.03em; padding:1.5px 6px;
+  border-radius:5px; border:1px solid var(--hair); color:var(--ink-2); background:var(--panel-2);
+  white-space:nowrap; }
+.chip.pk { color:var(--pk); background:var(--pk-bg); border-color:transparent; font-weight:650; }
+.chip.fk { color:var(--dom); border-color:color-mix(in srgb,var(--dom) 40%,transparent);
+  background:color-mix(in srgb,var(--dom) 9%,transparent); }
+.chip.sfk { color:var(--danger); border:1px dashed var(--danger);
+  background:var(--danger-bg); font-weight:600; }
+.chip.u { color:var(--c-analytics); border-color:color-mix(in srgb,var(--c-analytics) 40%,transparent); }
+.chip.nn { color:var(--ink-2); }
+.chip.casc { color:var(--c-sales); border-color:color-mix(in srgb,var(--c-sales) 40%,transparent); }
+.card-f { font-family:var(--mono); font-size:10.5px; color:var(--muted); padding:9px 14px 11px;
+  background:var(--panel-2); }
+.card-f code { color:var(--ink-2); }
+
+.callout { background:var(--danger-bg); border:1px solid color-mix(in srgb,var(--danger) 35%,transparent);
+  border-left:4px solid var(--danger); border-radius:12px; padding:18px 20px; margin:0 0 34px; }
+.callout h3 { margin:0 0 6px; font-size:16px; color:var(--danger); }
+.callout p { margin:0 0 14px; font-size:13.5px; color:var(--ink-2); max-width:74ch; }
+.callout table { border-collapse:collapse; font-family:var(--mono); font-size:12.5px; }
+.callout td { padding:5px 14px 5px 0; }
+.callout td code { color:var(--ink); }
+.callout .arw { color:var(--danger); padding:0 6px; }
+
+footer.foot { font-size:12.5px; color:var(--muted); border-top:1px solid var(--hair); padding-top:16px; }
+footer.foot code { font-family:var(--mono); color:var(--ink-2); }
+@media (max-width:600px) { .grid { grid-template-columns:1fr; } }
+</style>
+
+<div class="wrap"><div class="inner">
+  <p class="eyebrow">Postgres · Flyway V1–V2 · Spring / JPA</p>
+  <h1><code>invoice-gen</code> — database schema</h1>
+  <p class="lede">Multi-tenant GST invoicing. Everything roots at <code>companies</code>. Fourteen tables,
+  eighteen real foreign keys, and <b>three soft references</b> the app enforces but the database does not.
+  Reverse-engineered from the Flyway migrations and JPA entities.</p>
+
+  <div class="stats">
+    <div class="stat"><div class="n">14</div><div class="l">tables</div></div>
+    <div class="stat"><div class="n">18</div><div class="l">DB foreign keys</div></div>
+    <div class="stat warn"><div class="n">3</div><div class="l">soft refs (no constraint)</div></div>
+    <div class="stat"><div class="n">1</div><div class="l">M:N junction</div></div>
+    <div class="stat"><div class="n">3</div><div class="l">JSONB columns</div></div>
+    <div class="stat"><div class="n">5</div><div class="l">domains</div></div>
+  </div>
+
+  <div class="legend">
+    <span class="lg"><span class="ln"></span><b>solid</b> = enforced FK</span>
+    <span class="lg"><span class="ln soft"></span><b>dashed</b> = soft ref, app-level only</span>
+    <span class="lg"><span class="chip pk">PK</span></span>
+    <span class="lg"><span class="chip fk" style="--dom:var(--c-core)">FK</span></span>
+    <span class="lg"><span class="chip sfk">SOFT</span></span>
+    <span class="lg"><span class="chip u">UNIQUE</span></span>
+    <span class="lg"><span class="chip casc">CASCADE</span></span>
+  </div>
+
+  <div class="panel">
+    <div class="cap">Entity relationships</div>
+    <pre class="mermaid">
+erDiagram
+  companies {
+    bigserial id PK
+  }
+  users {
+    bigserial id PK
+    bigint company_id FK
+    varchar email UK
+  }
+  settings {
+    bigserial id PK
+    bigint company_id UK
+  }
+  customers {
+    bigserial id PK
+    bigint company_id FK
+  }
+  products {
+    bigserial id PK
+    bigint company_id FK
+  }
+  materials {
+    bigserial id PK
+    bigint company_id FK
+  }
+  product_materials {
+    bigint product_id PK
+    bigint material_id PK
+  }
+  material_price_history {
+    bigserial id PK
+    bigint material_id FK
+  }
+  product_price_history {
+    bigserial id PK
+    bigint product_id FK
+  }
+  invoices {
+    bigserial id PK
+    varchar invoice_number UK
+    bigint company_id FK
+    bigint customer_id
+  }
+  invoice_line_items {
+    bigserial id PK
+    bigint invoice_id FK
+    bigint product_id
+  }
+  payments {
+    bigserial id PK
+    bigint invoice_id FK
+  }
+  invoice_sequences {
+    bigserial id PK
+    bigint company_id FK
+    bigint invoice_id
+  }
+  analytics_cache {
+    bigserial id PK
+    bigint company_id FK
+  }
+  companies ||--o{ users : has
+  companies ||--o{ settings : has
+  companies ||--o{ customers : has
+  users ||--o{ customers : has
+  companies ||--o{ products : has
+  users ||--o{ products : has
+  companies ||--o{ materials : has
+  users ||--o{ materials : has
+  products ||--o{ product_materials : has
+  materials ||--o{ product_materials : has
+  materials ||--o{ material_price_history : has
+  products ||--o{ product_price_history : has
+  companies ||--o{ invoices : has
+  users ||--o{ invoices : has
+  invoices ||--o{ invoice_line_items : has
+  invoices ||--o{ payments : has
+  companies ||--o{ invoice_sequences : has
+  companies ||--o{ analytics_cache : has
+  customers |o..o{ invoices : "customer_id (soft)"
+  products |o..o{ invoice_line_items : "product_id (soft)"
+  invoices |o..o{ invoice_sequences : "invoice_id (soft)"
+    </pre>
+  </div>
+
+  <div class="callout">
+    <h3>⚠ Three references have no database foreign key</h3>
+    <p>These columns are plain <code>bigint</code>s mapped as <code>@Column</code> (not <code>@ManyToOne</code>).
+    Referential integrity lives only in application code — orphans are possible, and a JOIN won't be constraint-checked.
+    Deleting a customer or product will <b>not</b> cascade or block here.</p>
+    <table>
+      <tr><td><b>from</b></td><td></td><td><b>to</b></td></tr>
+      <tr><td><code>invoices.customer_id</code></td><td class="arw">⇢</td><td><code>customers.id</code></td></tr>
+<tr><td><code>invoice_line_items.product_id</code></td><td class="arw">⇢</td><td><code>products.id</code></td></tr>
+<tr><td><code>invoice_sequences.invoice_id</code></td><td class="arw">⇢</td><td><code>invoices.id</code></td></tr>
+    </table>
+  </div>
+
+  <section class="dgroup" style="--dom:var(--c-core)">
+  <h2 class="dh"><span class="dot"></span>Core / tenant<span class="dh-n">3</span></h2>
+  <div class="grid"><article class="card" data-dom="core" style="--dom:var(--c-core)">
+  <header class="card-h">
+    <div class="th"><span class="dot"></span><code class="tname">companies</code></div>
+    <span class="cc">11 cols</span>
+  </header>
+  <p class="tnote">Tenant root. Every other row hangs off a company.</p>
+  <div class="rows"><div class="row"><code class="cn">id</code><code class="ct">bigserial</code><span class="tags"><span class="chip pk">PK</span></span></div><div class="row"><code class="cn">company_name</code><code class="ct">varchar(150)</code><span class="tags"><span class="chip nn">NOT NULL</span></span></div><div class="row"><code class="cn">gst_number</code><code class="ct">varchar(30)</code><span class="tags"></span></div><div class="row"><code class="cn">phone</code><code class="ct">varchar(20)</code><span class="tags"></span></div><div class="row"><code class="cn">email</code><code class="ct">varchar(255)</code><span class="tags"></span></div><div class="row"><code class="cn">address</code><code class="ct">text</code><span class="tags"></span></div><div class="row"><code class="cn">bank_name</code><code class="ct">varchar(100)</code><span class="tags"></span></div><div class="row"><code class="cn">account_number</code><code class="ct">varchar(50)</code><span class="tags"></span></div><div class="row"><code class="cn">ifsc</code><code class="ct">varchar(20)</code><span class="tags"></span></div><div class="row"><code class="cn">upi_id</code><code class="ct">varchar(50)</code><span class="tags"></span></div><div class="row"><code class="cn">logo</code><code class="ct">text</code><span class="tags"></span></div></div>
+  <footer class="card-f">+ <code>created_at</code> · <code>updated_at</code> · <code>deleted_at</code> — soft delete</footer>
+</article>
+<article class="card" data-dom="core" style="--dom:var(--c-core)">
+  <header class="card-h">
+    <div class="th"><span class="dot"></span><code class="tname">users</code></div>
+    <span class="cc">6 cols</span>
+  </header>
+  <p class="tnote">App users. role is free-text VARCHAR holding the UserRole enum.</p>
+  <div class="rows"><div class="row"><code class="cn">id</code><code class="ct">bigserial</code><span class="tags"><span class="chip pk">PK</span></span></div><div class="row"><code class="cn">company_id</code><code class="ct">bigint</code><span class="tags"><span class="chip fk">FK&nbsp;→&nbsp;companies</span></span></div><div class="row"><code class="cn">name</code><code class="ct">varchar(100)</code><span class="tags"><span class="chip nn">NOT NULL</span></span></div><div class="row"><code class="cn">email</code><code class="ct">varchar(255)</code><span class="tags"><span class="chip enum">U NN</span></span></div><div class="row"><code class="cn">password</code><code class="ct">varchar(255)</code><span class="tags"><span class="chip nn">NOT NULL</span></span></div><div class="row"><code class="cn">role</code><code class="ct">varchar(20)</code><span class="tags"><span class="chip enum">ADMIN</span> <span class="chip enum">MANAGER</span> <span class="chip enum">EMPLOYEE</span></span></div></div>
+  <footer class="card-f">+ <code>created_at</code> · <code>updated_at</code> · <code>deleted_at</code> — soft delete</footer>
+</article>
+<article class="card" data-dom="core" style="--dom:var(--c-core)">
+  <header class="card-h">
+    <div class="th"><span class="dot"></span><code class="tname">settings</code></div>
+    <span class="cc">10 cols</span>
+  </header>
+  <p class="tnote">One row per company (company_id UNIQUE → 1:1).</p>
+  <div class="rows"><div class="row"><code class="cn">id</code><code class="ct">bigserial</code><span class="tags"><span class="chip pk">PK</span></span></div><div class="row"><code class="cn">company_id</code><code class="ct">bigint</code><span class="tags"><span class="chip fk">FK&nbsp;→&nbsp;companies</span> <span class="chip u">UNIQUE</span> <span class="chip meta">1:1</span></span></div><div class="row"><code class="cn">gst_percentage</code><code class="ct">decimal(5,2)</code><span class="tags"></span></div><div class="row"><code class="cn">cgst_percentage</code><code class="ct">decimal(5,2)</code><span class="tags"></span></div><div class="row"><code class="cn">sgst_percentage</code><code class="ct">decimal(5,2)</code><span class="tags"></span></div><div class="row"><code class="cn">default_profit_margin</code><code class="ct">decimal(5,2)</code><span class="tags"></span></div><div class="row"><code class="cn">currency</code><code class="ct">varchar(10)</code><span class="tags"></span></div><div class="row"><code class="cn">invoice_prefix</code><code class="ct">varchar(20)</code><span class="tags"></span></div><div class="row"><code class="cn">financial_year</code><code class="ct">varchar(20)</code><span class="tags"></span></div><div class="row"><code class="cn">vehicle_numbers</code><code class="ct">text[]</code><span class="tags"><span class="chip meta">array</span></span></div></div>
+  <footer class="card-f">+ <code>created_at</code> · <code>updated_at</code> · <code>deleted_at</code> — soft delete</footer>
+</article></div>
+</section><section class="dgroup" style="--dom:var(--c-customer)">
+  <h2 class="dh"><span class="dot"></span>Customer<span class="dh-n">1</span></h2>
+  <div class="grid"><article class="card" data-dom="customer" style="--dom:var(--c-customer)">
+  <header class="card-h">
+    <div class="th"><span class="dot"></span><code class="tname">customers</code></div>
+    <span class="cc">12 cols</span>
+  </header>
+  <p class="tnote">Billed parties. Referenced by invoices without a DB constraint.</p>
+  <div class="rows"><div class="row"><code class="cn">id</code><code class="ct">bigserial</code><span class="tags"><span class="chip pk">PK</span></span></div><div class="row"><code class="cn">company_id</code><code class="ct">bigint</code><span class="tags"><span class="chip fk">FK&nbsp;→&nbsp;companies</span></span></div><div class="row"><code class="cn">created_by_user_id</code><code class="ct">bigint</code><span class="tags"><span class="chip fk">FK&nbsp;→&nbsp;users</span> <span class="chip meta">nullable</span></span></div><div class="row"><code class="cn">customer_name</code><code class="ct">varchar(150)</code><span class="tags"><span class="chip nn">NOT NULL</span></span></div><div class="row"><code class="cn">gst_number</code><code class="ct">varchar(30)</code><span class="tags"></span></div><div class="row"><code class="cn">phone</code><code class="ct">varchar(20)</code><span class="tags"></span></div><div class="row"><code class="cn">email</code><code class="ct">varchar(255)</code><span class="tags"></span></div><div class="row"><code class="cn">address</code><code class="ct">text</code><span class="tags"></span></div><div class="row"><code class="cn">bank_name</code><code class="ct">varchar(100)</code><span class="tags"></span></div><div class="row"><code class="cn">account_number</code><code class="ct">varchar(50)</code><span class="tags"></span></div><div class="row"><code class="cn">ifsc</code><code class="ct">varchar(20)</code><span class="tags"></span></div><div class="row"><code class="cn">upi_id</code><code class="ct">varchar(50)</code><span class="tags"></span></div></div>
+  <footer class="card-f">+ <code>created_at</code> · <code>updated_at</code> · <code>deleted_at</code> — soft delete</footer>
+</article></div>
+</section><section class="dgroup" style="--dom:var(--c-catalog)">
+  <h2 class="dh"><span class="dot"></span>Catalog<span class="dh-n">5</span></h2>
+  <div class="grid"><article class="card" data-dom="catalog" style="--dom:var(--c-catalog)">
+  <header class="card-h">
+    <div class="th"><span class="dot"></span><code class="tname">products</code></div>
+    <span class="cc">7 cols</span>
+  </header>
+  <p class="tnote">Sellable items. M:N with materials via product_materials.</p>
+  <div class="rows"><div class="row"><code class="cn">id</code><code class="ct">bigserial</code><span class="tags"><span class="chip pk">PK</span></span></div><div class="row"><code class="cn">company_id</code><code class="ct">bigint</code><span class="tags"><span class="chip fk">FK&nbsp;→&nbsp;companies</span></span></div><div class="row"><code class="cn">created_by_user_id</code><code class="ct">bigint</code><span class="tags"><span class="chip fk">FK&nbsp;→&nbsp;users</span> <span class="chip meta">nullable</span></span></div><div class="row"><code class="cn">product_name</code><code class="ct">varchar(150)</code><span class="tags"><span class="chip nn">NOT NULL</span></span></div><div class="row"><code class="cn">description</code><code class="ct">text</code><span class="tags"></span></div><div class="row"><code class="cn">active</code><code class="ct">boolean</code><span class="tags"><span class="chip def">default true</span></span></div><div class="row"><code class="cn">hsn_code</code><code class="ct">varchar(30)</code><span class="tags"></span></div></div>
+  <footer class="card-f">+ <code>created_at</code> · <code>updated_at</code> · <code>deleted_at</code> — soft delete</footer>
+</article>
+<article class="card" data-dom="catalog" style="--dom:var(--c-catalog)">
+  <header class="card-h">
+    <div class="th"><span class="dot"></span><code class="tname">materials</code></div>
+    <span class="cc">8 cols</span>
+  </header>
+  <p class="tnote">Raw inputs. company_id nullable in SQL; entity treats it NOT NULL.</p>
+  <div class="rows"><div class="row"><code class="cn">id</code><code class="ct">bigserial</code><span class="tags"><span class="chip pk">PK</span></span></div><div class="row"><code class="cn">company_id</code><code class="ct">bigint</code><span class="tags"><span class="chip fk">FK&nbsp;→&nbsp;companies</span></span></div><div class="row"><code class="cn">created_by_user_id</code><code class="ct">bigint</code><span class="tags"><span class="chip fk">FK&nbsp;→&nbsp;users</span> <span class="chip meta">nullable</span></span></div><div class="row"><code class="cn">material_name</code><code class="ct">varchar(100)</code><span class="tags"><span class="chip nn">NOT NULL</span></span></div><div class="row"><code class="cn">hsn_code</code><code class="ct">varchar(20)</code><span class="tags"></span></div><div class="row"><code class="cn">unit</code><code class="ct">varchar(20)</code><span class="tags"></span></div><div class="row"><code class="cn">current_price</code><code class="ct">decimal(12,2)</code><span class="tags"></span></div><div class="row"><code class="cn">active</code><code class="ct">boolean</code><span class="tags"><span class="chip def">default true</span></span></div></div>
+  <footer class="card-f">+ <code>created_at</code> · <code>updated_at</code> · <code>deleted_at</code> — soft delete</footer>
+</article>
+<article class="card" data-dom="catalog" style="--dom:var(--c-catalog)">
+  <header class="card-h">
+    <div class="th"><span class="dot"></span><code class="tname">product_materials</code></div>
+    <span class="cc">2 cols</span>
+  </header>
+  <p class="tnote">Junction. Composite PK, no surrogate id, no audit columns.</p>
+  <div class="rows"><div class="row"><code class="cn">product_id</code><code class="ct">bigint</code><span class="tags"><span class="chip pk">PK</span> <span class="chip fk">FK&nbsp;→&nbsp;products</span></span></div><div class="row"><code class="cn">material_id</code><code class="ct">bigint</code><span class="tags"><span class="chip pk">PK</span> <span class="chip fk">FK&nbsp;→&nbsp;materials</span></span></div></div>
+  <footer class="card-f">+ <code>created_at</code> · <code>updated_at</code> · <code>deleted_at</code> — soft delete</footer>
+</article>
+<article class="card" data-dom="catalog" style="--dom:var(--c-catalog)">
+  <header class="card-h">
+    <div class="th"><span class="dot"></span><code class="tname">material_price_history</code></div>
+    <span class="cc">5 cols</span>
+  </header>
+  <p class="tnote">Effective-dated material prices.</p>
+  <div class="rows"><div class="row"><code class="cn">id</code><code class="ct">bigserial</code><span class="tags"><span class="chip pk">PK</span></span></div><div class="row"><code class="cn">material_id</code><code class="ct">bigint</code><span class="tags"><span class="chip fk">FK&nbsp;→&nbsp;materials</span></span></div><div class="row"><code class="cn">price</code><code class="ct">decimal(12,2)</code><span class="tags"><span class="chip nn">NOT NULL</span></span></div><div class="row"><code class="cn">effective_from</code><code class="ct">date</code><span class="tags"><span class="chip nn">NOT NULL</span></span></div><div class="row"><code class="cn">effective_to</code><code class="ct">date</code><span class="tags"></span></div></div>
+  <footer class="card-f">+ <code>created_at</code> · <code>updated_at</code> · <code>deleted_at</code> — soft delete</footer>
+</article>
+<article class="card" data-dom="catalog" style="--dom:var(--c-catalog)">
+  <header class="card-h">
+    <div class="th"><span class="dot"></span><code class="tname">product_price_history</code></div>
+    <span class="cc">8 cols</span>
+  </header>
+  <p class="tnote">Effective-dated product costing + margin.</p>
+  <div class="rows"><div class="row"><code class="cn">id</code><code class="ct">bigserial</code><span class="tags"><span class="chip pk">PK</span></span></div><div class="row"><code class="cn">product_id</code><code class="ct">bigint</code><span class="tags"><span class="chip fk">FK&nbsp;→&nbsp;products</span></span></div><div class="row"><code class="cn">manufacturing_cost</code><code class="ct">decimal(12,2)</code><span class="tags"></span></div><div class="row"><code class="cn">labour_charges</code><code class="ct">decimal(12,2)</code><span class="tags"></span></div><div class="row"><code class="cn">selling_price</code><code class="ct">decimal(12,2)</code><span class="tags"></span></div><div class="row"><code class="cn">profit_margin</code><code class="ct">decimal(5,2)</code><span class="tags"></span></div><div class="row"><code class="cn">effective_from</code><code class="ct">date</code><span class="tags"></span></div><div class="row"><code class="cn">effective_to</code><code class="ct">date</code><span class="tags"></span></div></div>
+  <footer class="card-f">+ <code>created_at</code> · <code>updated_at</code> · <code>deleted_at</code> — soft delete</footer>
+</article></div>
+</section><section class="dgroup" style="--dom:var(--c-sales)">
+  <h2 class="dh"><span class="dot"></span>Sales<span class="dh-n">4</span></h2>
+  <div class="grid"><article class="card" data-dom="sales" style="--dom:var(--c-sales)">
+  <header class="card-h">
+    <div class="th"><span class="dot"></span><code class="tname">invoices</code></div>
+    <span class="cc">17 cols</span>
+  </header>
+  <p class="tnote">Header. customer_id is a SOFT ref — no FK to customers.</p>
+  <div class="rows"><div class="row"><code class="cn">id</code><code class="ct">bigserial</code><span class="tags"><span class="chip pk">PK</span></span></div><div class="row"><code class="cn">invoice_number</code><code class="ct">varchar(50)</code><span class="tags"><span class="chip u">UNIQUE</span></span></div><div class="row"><code class="cn">company_id</code><code class="ct">bigint</code><span class="tags"><span class="chip fk">FK&nbsp;→&nbsp;companies</span></span></div><div class="row"><code class="cn">created_by</code><code class="ct">bigint</code><span class="tags"><span class="chip fk">FK&nbsp;→&nbsp;users</span></span></div><div class="row"><code class="cn">customer_id</code><code class="ct">bigint</code><span class="tags"><span class="chip sfk">SOFT&nbsp;⇢&nbsp;customers</span></span></div><div class="row"><code class="cn">invoice_date</code><code class="ct">date</code><span class="tags"><span class="chip nn">NOT NULL</span></span></div><div class="row"><code class="cn">subtotal</code><code class="ct">decimal(12,2)</code><span class="tags"><span class="chip def">default 0</span></span></div><div class="row"><code class="cn">po_number</code><code class="ct">varchar(30)</code><span class="tags"></span></div><div class="row"><code class="cn">cgst</code><code class="ct">decimal(12,2)</code><span class="tags"><span class="chip def">default 0</span></span></div><div class="row"><code class="cn">sgst</code><code class="ct">decimal(12,2)</code><span class="tags"><span class="chip def">default 0</span></span></div><div class="row"><code class="cn">cgst_percentage</code><code class="ct">decimal(5,2)</code><span class="tags"></span></div><div class="row"><code class="cn">sgst_percentage</code><code class="ct">decimal(5,2)</code><span class="tags"></span></div><div class="row"><code class="cn">discount</code><code class="ct">decimal(12,2)</code><span class="tags"><span class="chip def">default 0</span></span></div><div class="row"><code class="cn">grand_total</code><code class="ct">decimal(12,2)</code><span class="tags"><span class="chip def">default 0</span></span></div><div class="row"><code class="cn">grand_total_words</code><code class="ct">text</code><span class="tags"><span class="chip nn">NOT NULL</span></span></div><div class="row"><code class="cn">status</code><code class="ct">varchar(30)</code><span class="tags"><span class="chip def">default GENERATED</span></span></div><div class="row"><code class="cn">remarks</code><code class="ct">text</code><span class="tags"></span></div></div>
+  <footer class="card-f">+ <code>created_at</code> · <code>updated_at</code> · <code>deleted_at</code> — soft delete</footer>
+</article>
+<article class="card" data-dom="sales" style="--dom:var(--c-sales)">
+  <header class="card-h">
+    <div class="th"><span class="dot"></span><code class="tname">invoice_line_items</code></div>
+    <span class="cc">7 cols</span>
+  </header>
+  <p class="tnote">Line rows. product_id is a SOFT ref; name/hsn snapshotted.</p>
+  <div class="rows"><div class="row"><code class="cn">id</code><code class="ct">bigserial</code><span class="tags"><span class="chip pk">PK</span></span></div><div class="row"><code class="cn">invoice_id</code><code class="ct">bigint</code><span class="tags"><span class="chip fk">FK&nbsp;→&nbsp;invoices</span> <span class="chip casc">ON&nbsp;DELETE&nbsp;CASCADE</span></span></div><div class="row"><code class="cn">product_id</code><code class="ct">bigint</code><span class="tags"><span class="chip sfk">SOFT&nbsp;⇢&nbsp;products</span></span></div><div class="row"><code class="cn">product_name</code><code class="ct">varchar(150)</code><span class="tags"><span class="chip nn">NOT NULL</span></span></div><div class="row"><code class="cn">hsn_code</code><code class="ct">varchar(30)</code><span class="tags"></span></div><div class="row"><code class="cn">quantity</code><code class="ct">decimal(12,2)</code><span class="tags"><span class="chip nn">NOT NULL</span></span></div><div class="row"><code class="cn">unit_price</code><code class="ct">decimal(12,2)</code><span class="tags"><span class="chip nn">NOT NULL</span></span></div></div>
+  <footer class="card-f">+ <code>created_at</code> · <code>updated_at</code> · <code>deleted_at</code> — soft delete</footer>
+</article>
+<article class="card" data-dom="sales" style="--dom:var(--c-sales)">
+  <header class="card-h">
+    <div class="th"><span class="dot"></span><code class="tname">payments</code></div>
+    <span class="cc">7 cols</span>
+  </header>
+  <p class="tnote">Receipts against an invoice.</p>
+  <div class="rows"><div class="row"><code class="cn">id</code><code class="ct">bigserial</code><span class="tags"><span class="chip pk">PK</span></span></div><div class="row"><code class="cn">invoice_id</code><code class="ct">bigint</code><span class="tags"><span class="chip fk">FK&nbsp;→&nbsp;invoices</span> <span class="chip casc">ON&nbsp;DELETE&nbsp;CASCADE</span></span></div><div class="row"><code class="cn">payment_date</code><code class="ct">date</code><span class="tags"></span></div><div class="row"><code class="cn">amount</code><code class="ct">decimal(12,2)</code><span class="tags"><span class="chip nn">NOT NULL</span></span></div><div class="row"><code class="cn">payment_method</code><code class="ct">varchar(30)</code><span class="tags"></span></div><div class="row"><code class="cn">transaction_reference</code><code class="ct">varchar(100)</code><span class="tags"></span></div><div class="row"><code class="cn">remarks</code><code class="ct">text</code><span class="tags"></span></div></div>
+  <footer class="card-f">+ <code>created_at</code> · <code>updated_at</code> · <code>deleted_at</code> — soft delete</footer>
+</article>
+<article class="card" data-dom="sales" style="--dom:var(--c-sales)">
+  <header class="card-h">
+    <div class="th"><span class="dot"></span><code class="tname">invoice_sequences</code></div>
+    <span class="cc">7 cols</span>
+  </header>
+  <p class="tnote">Audit log of create requests/responses as JSONB. invoice_id is a SOFT ref.</p>
+  <div class="rows"><div class="row"><code class="cn">id</code><code class="ct">bigserial</code><span class="tags"><span class="chip pk">PK</span></span></div><div class="row"><code class="cn">company_id</code><code class="ct">bigint</code><span class="tags"><span class="chip fk">FK&nbsp;→&nbsp;companies</span></span></div><div class="row"><code class="cn">invoice_id</code><code class="ct">bigint</code><span class="tags"><span class="chip sfk">SOFT&nbsp;⇢&nbsp;invoices</span></span></div><div class="row"><code class="cn">invoice_number</code><code class="ct">varchar(50)</code><span class="tags"></span></div><div class="row"><code class="cn">invoice_date</code><code class="ct">date</code><span class="tags"><span class="chip nn">NOT NULL</span></span></div><div class="row"><code class="cn">request_json</code><code class="ct">jsonb</code><span class="tags"><span class="chip nn">NOT NULL</span></span></div><div class="row"><code class="cn">response_json</code><code class="ct">jsonb</code><span class="tags"><span class="chip nn">NOT NULL</span></span></div></div>
+  <footer class="card-f">+ <code>created_at</code> · <code>updated_at</code> · <code>deleted_at</code> — soft delete</footer>
+</article></div>
+</section><section class="dgroup" style="--dom:var(--c-analytics)">
+  <h2 class="dh"><span class="dot"></span>Analytics<span class="dh-n">1</span></h2>
+  <div class="grid"><article class="card" data-dom="analytics" style="--dom:var(--c-analytics)">
+  <header class="card-h">
+    <div class="th"><span class="dot"></span><code class="tname">analytics_cache</code></div>
+    <span class="cc">6 cols</span>
+  </header>
+  <p class="tnote">Precomputed analytics blobs per company + period.</p>
+  <div class="rows"><div class="row"><code class="cn">id</code><code class="ct">bigserial</code><span class="tags"><span class="chip pk">PK</span></span></div><div class="row"><code class="cn">company_id</code><code class="ct">bigint</code><span class="tags"><span class="chip fk">FK&nbsp;→&nbsp;companies</span></span></div><div class="row"><code class="cn">analysis_type</code><code class="ct">varchar(50)</code><span class="tags"></span></div><div class="row"><code class="cn">period_start</code><code class="ct">date</code><span class="tags"></span></div><div class="row"><code class="cn">period_end</code><code class="ct">date</code><span class="tags"></span></div><div class="row"><code class="cn">analysis_json</code><code class="ct">jsonb</code><span class="tags"></span></div></div>
+  <footer class="card-f">+ <code>created_at</code> · <code>updated_at</code> · <code>deleted_at</code> — soft delete</footer>
+</article></div>
+</section>
+
+  <footer class="foot">
+    Source of truth: <code>V1__create_all_basic_tables.sql</code>, <code>V2__add_foreign_key_indexes.sql</code>,
+    and the JPA entities under <code>com.inv.invmaster001.entity</code>. All tables carry
+    <code>created_at</code> / <code>updated_at</code> / <code>deleted_at</code> (soft delete).
+    Diagram: solid = enforced FK, dotted = soft reference.
+  </footer>
+</div></div>
+</body>
+</html>
