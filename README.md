@@ -39,6 +39,10 @@ The API is available at `http://localhost:8080`.
 
 ## Data Model
 
+Full ER diagram (14 tables, foreign keys, and the soft references): **[`docs/db/`](./docs/db/README.md)** — [`erd.png`](./docs/db/erd.png) · [`erd.html`](./docs/db/erd.html) · [`erd.excalidraw`](./docs/db/erd.excalidraw).
+
+![ER diagram](./docs/db/erd.png)
+
 ```
 companies
   └── users           (company_id FK, role: ADMIN | MANAGER | EMPLOYEE)
