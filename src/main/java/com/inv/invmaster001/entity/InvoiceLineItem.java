@@ -39,6 +39,8 @@ public class InvoiceLineItem {
 
     private String hsnCode;
 
+    private String poNumber;
+
     @Column(
             precision = 12,
             scale = 2,

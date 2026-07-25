@@ -157,11 +157,12 @@
         }
 
         .col-serial   { width: 6%;  text-align: center; }
-        .col-product  { width: 36%; }
-        .col-hsn      { width: 12%; text-align: center; }
-        .col-qty      { width: 10%; text-align: center; }
-        .col-rate     { width: 18%; text-align: right; }
-        .col-amount   { width: 18%; text-align: right; }
+        .col-product  { width: 30%; }
+        .col-hsn      { width: 10%; text-align: center; }
+        .col-po       { width: 12%; text-align: center; }
+        .col-qty      { width: 8%;  text-align: center; }
+        .col-rate     { width: 17%; text-align: right; }
+        .col-amount   { width: 17%; text-align: right; }
 
         /* ---------- Summary (bank + totals) ---------- */
 
@@ -291,9 +292,6 @@
                 <div class="box-body">
                     <p><span class="label">Invoice No:</span> <span th:text="${invoiceNumber}"></span></p>
                     <p><span class="label">Invoice Date:</span> <span th:text="${invoiceDate}"></span></p>
-                    <p th:if="${poNumber != null and !#strings.isEmpty(poNumber)}">
-                        <span class="label">PO Number:</span> <span th:text="${poNumber}"></span>
-                    </p>
                 </div>
             </div>
         </td>
@@ -320,6 +318,7 @@
         <th class="col-serial">#</th>
         <th class="col-product" style="text-align:left;">Product</th>
         <th class="col-hsn">HSN</th>
+        <th class="col-po">PO No.</th>
         <th class="col-qty">Qty</th>
         <th class="col-rate">Unit Price (Rs.)</th>
         <th class="col-amount">Amount (Rs.)</th>
@@ -330,6 +329,7 @@
         <td class="col-serial" th:text="${item.serialNumber}">1</td>
         <td class="col-product" th:text="${item.productName}">Product Name</td>
         <td class="col-hsn" th:text="${item.hsnCode}">0000</td>
+        <td class="col-po" th:text="${item.poNumber}"></td>
         <td class="col-qty" th:text="${item.quantity}">1</td>
         <td class="col-rate" th:text="${#numbers.formatDecimal(item.unitPrice,1,'COMMA',2,'POINT')}">100.00</td>
         <td class="col-amount" th:text="${#numbers.formatDecimal(item.totalPrice,1,'COMMA',2,'POINT')}">100.00</td>

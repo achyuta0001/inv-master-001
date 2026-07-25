@@ -21,7 +21,6 @@ public class InvoiceListResponse {
     private LocalDate invoiceDate;
     private Long customerId;
     private String customerName;
-    private String poNumber;
     private BigDecimal grandTotal;
     private String status;
     private String createdByName;

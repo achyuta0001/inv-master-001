@@ -107,10 +107,6 @@ public class InvoiceDocumentMapper {
                         invoice.getInvoiceDate()
                 )
 
-                .poNumber(
-                        invoice.getPoNumber()
-                )
-
 
                 // =========================
                 // ITEMS
@@ -193,6 +189,10 @@ public class InvoiceDocumentMapper {
 
                                 .hsnCode(
                                         item.getHsnCode()
+                                )
+
+                                .poNumber(
+                                        item.getPoNumber()
                                 )
 
                                 .quantity(

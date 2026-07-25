@@ -19,4 +19,6 @@ public class InvoiceItemRequest {
 
     private BigDecimal quantity;
 
+    private String poNumber;
+
 }

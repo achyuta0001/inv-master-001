@@ -64,8 +64,6 @@ public class Invoice {
     private List<Payment> payments =
             new ArrayList<>();
 
-    private String poNumber;
-
     private LocalDate invoiceDate;
 
 
